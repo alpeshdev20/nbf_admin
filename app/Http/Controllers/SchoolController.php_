@@ -1,0 +1,118 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\DataTables\SchoolDataTable;
+use App\Models\school;
+use Illuminate\Http\Request;
+use App\Http\Requests\CreateSchoolRequest;
+use App\Http\Requests\UpdateSchoolRequest;
+use App\Repositories\SchoolRepository;
+use Flash;
+use App\Http\Controllers\AppBaseController;
+
+use Response;
+
+class SchoolController extends AppBaseController
+{
+	
+	/** @var  schoolRepository */
+    private $schoolRepository;
+
+    public function __construct(SchoolRepository $schoolRepository)
+    {
+        $this->schoolRepository = $schoolRepository;
+    }
+	
+	
+	
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function index(SchoolDataTable $schoolDataTable)
+    {
+        return $schoolDataTable->render('schools.index');
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function create()
+    {
+        return view('schools.create');
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function store(CreateSchoolRequest $request)
+    {
+		$input = $request->all();
+
+        $audioBook = $this->schoolRepository->create($input);
+
+        Flash::success('School created successfully.');
+
+        return redirect(route('manageschools.index'));
+    }
+
+    /**
+     * Display the specified resource.
+     *
+     * @param  int $id
+     * @return \Illuminate\Http\Response
+     */
+    public function show($id)
+    {
+        $school = $this->schoolRepository->find($id);
+
+        if (empty($school)) {
+            Flash::error('School not found');
+
+            return redirect(route('manageschools.index'));
+        }
+
+        return view('schools.show')->with('school', $school);
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  \App\Models\school  $school
+     * @return \Illuminate\Http\Response
+     */
+    public function edit(school $school)
+    {
+        //
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Models\school  $school
+     * @return \Illuminate\Http\Response
+     */
+    public function update(Request $request, school $school)
+    {
+        //
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  \App\Models\school  $school
+     * @return \Illuminate\Http\Response
+     */
+    public function destroy(school $school)
+    {
+        //
+    }
+}

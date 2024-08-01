@@ -1,0 +1,49 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class school extends Model
+{
+	
+	public $table = "schools";
+	
+	
+    public $fillable = [
+        'parent_group',
+        'name',
+        'address',
+        'city',
+        'state',
+        'country',
+        'pin',
+        'authorized'
+    ];
+	
+	protected $casts = [
+        'id' => 'integer',
+        'parent_group' => 'string',
+        'name' => 'string',
+        'address' => 'string',
+        'city' => 'string',
+        'state' => 'string',
+        'country' => 'string',
+        'pin' => 'string',
+        'authorized' => 'integer'
+    ];
+	
+	
+	public static $rules = [
+        /*'parent_group' => 'required',*/
+        'name' => 'required',
+		'address' => 'required',
+		'city' => 'required',
+		'state' => 'required',
+		'country' => 'required',
+		'pin' => 'required',
+		'authorized' => 'required'
+    ];
+	
+	
+}

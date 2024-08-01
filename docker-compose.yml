@@ -1,0 +1,47 @@
+services:
+  app:
+    build:
+      args:
+        user: artechnolabs
+        uid: 1000
+      context: ./
+      dockerfile: Dockerfile
+    image: nbf-admin
+    container_name: nbf-admin
+    restart: unless-stopped
+    working_dir: /var/www/
+    volumes:
+      - ./:/var/www
+    networks:
+      - nbf-admin-network
+  db:
+    platform: linux/x86_64
+    image: mysql:5.7
+    container_name: nbf-admin-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_USER: ${DB_USERNAME}
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+    volumes:
+      - ./docker-compose/mysql:/docker-entrypoint-initdb.d
+    networks:
+      - nbf-admin-network
+  nginx:
+    image: nginx:alpine
+    container_name: nbf-admin-nginx
+    restart: unless-stopped
+    ports:
+      - 8001:80
+    volumes:
+      - ./:/var/www
+      - ./docker-compose/nginx:/etc/nginx/conf.d/
+    networks:
+      - nbf-admin-network
+networks:
+  nbf-admin-network:
+    driver: bridge
+  
