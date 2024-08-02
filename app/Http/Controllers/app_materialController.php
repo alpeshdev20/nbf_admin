@@ -96,7 +96,8 @@ class app_materialController extends AppBaseController
 
         // $country = Region::all();
         // $country = Region::all();
-        $countries = Region::all();
+       // $countries = Region::all();
+$countries = [];
 
         $allow_region = [];
         // $sgenre = sgenre::orderBy('id')->pluck('subgenre', 'subgenre');
@@ -115,14 +116,14 @@ class app_materialController extends AppBaseController
         $appMaterial = array();
         $pub = $pubs->toArray();
         if(Auth::user()->access->access_role == 1) {
-            return view('app_materials.create')->with(array('episodes'=> $episodes, 'material' => $mdata,'genre' => $gdata,'lang' =>$ldata, 'publisher'=>$pub, 'disabled'=>'', 'appMaterial' => $appMaterial,'age'=>$age,'product'=>$product,'region_data'=>$countries,'allow_region'=>$allow_region,'genre_ids'=>$genre_ids,'genre_data'=>$genre_data,"book_pdf_val"=>$book_pdf_val,"book_image_val"=>$book_image_val));
+            return view('app_materials.create')->with(array('episodes'=> $episodes, 'material' => $mdata, 'region_data'=>$countries,'genre' => $gdata,'lang' =>$ldata, 'publisher'=>$pub, 'disabled'=>'', 'appMaterial' => $appMaterial,'age'=>$age,'product'=>$product,'allow_region'=>$allow_region,'genre_ids'=>$genre_ids,'genre_data'=>$genre_data,"book_pdf_val"=>$book_pdf_val,"book_image_val"=>$book_image_val));
         } elseif(Auth::user()->access->access_role == 3) {
-            return view('app_materials.create')->with(array('episodes'=> $episodes, 'material' => $mdata,'genre' => $gdata,'lang' =>$ldata, 'publisher'=>$pub, 'disabled'=>'', 'appMaterial' => $appMaterial,'age'=>$age,'product'=>$product,'region_data'=>$countries,'allow_region'=>$allow_region,'genre_ids'=>$genre_ids,'genre_data'=>$genre_data,"book_pdf_val"=>$book_pdf_val,"book_image_val"=>$book_image_val));
+            return view('app_materials.create')->with(array('episodes'=> $episodes, 'material' => $mdata,'region_data'=>$countries,'genre' => $gdata,'lang' =>$ldata, 'publisher'=>$pub, 'disabled'=>'', 'appMaterial' => $appMaterial,'age'=>$age,'product'=>$product,'allow_region'=>$allow_region,'genre_ids'=>$genre_ids,'genre_data'=>$genre_data,"book_pdf_val"=>$book_pdf_val,"book_image_val"=>$book_image_val));
         }
         $pubs = book_publisher::where('user_id', Auth::user()->id)->pluck('publisher', 'id');
         $pub = $pubs->toArray();
         $appMaterial["publisher"] = book_publisher::where('user_id', Auth::user()->id)->first()->id;
-        return view('app_materials.create')->with(array('episodes'=> $episodes,'material' => $mdata,'genre' => $gdata,'lang' =>$ldata, 'publisher'=>$pub, 'disabled'=>'', 'appMaterial' => $appMaterial,'age'=>$age, 'product'=>$product,'region_data'=>$countries,'allow_region'=>$allow_region,'genre_ids'=>$genre_ids,'genre_data'=>$genre_data,"book_pdf_val"=>$book_pdf_val,"book_image_val"=>$book_image_val));
+        return view('app_materials.create')->with(array('episodes'=> $episodes,'material' => $mdata,'region_data'=>$countries,'genre' => $gdata,'lang' =>$ldata, 'publisher'=>$pub, 'disabled'=>'', 'appMaterial' => $appMaterial,'age'=>$age, 'product'=>$product,'allow_region'=>$allow_region,'genre_ids'=>$genre_ids,'genre_data'=>$genre_data,"book_pdf_val"=>$book_pdf_val,"book_image_val"=>$book_image_val));
     }
 
 

@@ -11,6 +11,12 @@ class ChangeColDataTypeInULogins extends Migration
      *
      * @return void
      */
+
+public function __construct()
+{
+    DB::getDoctrineConnection()->getDatabasePlatform()->registerDoctrineTypeMapping('enum', 'string');
+}
+
     public function up()
     {
         Schema::table('u_logins', function (Blueprint $table) {
