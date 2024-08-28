@@ -302,9 +302,11 @@ else { ?>
     if (selectedValue === '3') {
       $('#addbtndiv').addClass('hide');
     } else if (selectedValue === '5') {
-		$('#addbtndiv').addClass('hide');
+		$('#addbtndiv').addClass('show');
+		$('#addbtn').text('Add chapter');  // Set button text to "Add chapter"
 	} else {
 		$('#addbtndiv').removeClass('hide');
+		$('#addbtn').text('Add episode');
 	}
   });
 

@@ -240,7 +240,7 @@ $countries = [];
 			}
 		}
      
-        if($request->material_type == '2' || $request->material_type == '4' ) {
+        if($request->material_type == '2' || $request->material_type == '4' || $request->material_type == '5' ) {
             $episodes = $request->episodes;
             if(!empty($episodes)) {
 
@@ -323,10 +323,11 @@ $countries = [];
     public function edit($id)
     {
         $episodes = old('episodes');
+        // dd($episodes);
         $appMaterial = $this->appMaterialRepository->find($id);
         $material = $appMaterial->material_type;
 
-        if($appMaterial->material_type == '2' || $appMaterial->material_type == '4') {
+        if($appMaterial->material_type == '2' || $appMaterial->material_type == '4' || $appMaterial->material_type == '5') {
             $episode = appmaterial_item::where('appmaterial_id',$id)->get()->toArray();
         }
 
@@ -392,7 +393,7 @@ $countries = [];
         if (empty($appMaterial)) {
             Flash::error('App Material not found');
 
-            return redirect(route('appMaterials.index'));
+            return redirect(route('appMaterials.index'));   
         }
 
         if (Auth::user()->access->access_role == 1) {

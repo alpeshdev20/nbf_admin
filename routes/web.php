@@ -10,8 +10,11 @@
 | contains the "web" middleware group. Now create something great!
 |
 */
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\admloginController;
 
 // Route::get('/', function () {
 //     return view('welcome');
@@ -193,8 +196,12 @@ Route::post('teacherdetailuploads','TeacherDetailController@uploadCsv');
 
 Route::resource('teacherDetails', 'TeacherDetailController');
 
+// Route::get('use-data-overview', 'HomeController@UserDataOverview');
+Route::get('user-data-overview', [HomeController::class, 'UserDataOverview'])->name('user.data.overview');
 
-
+//change-passwod
+Route::get('change-passwod', [admloginController::class, 'changePasswod'])->name('change.passwod');
+Route::put('change-passwod-action', [admloginController::class, 'changePasswodAction'])->name('change.passwod.action');
 
 
 

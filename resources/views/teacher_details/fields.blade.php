@@ -20,7 +20,12 @@
 <?php } else { ?>
     <div class="form-group col-sm-6">
     {!! Form::label('password', 'Password:') !!}
-    {!! Form::text('password', null, ['class' => 'form-control']) !!}
+    {!! Form::password('password', ['class' => 'form-control']) !!}
+</div>
+
+<div class="form-group col-sm-6">
+    {!! Form::label('password_confirmation', 'Confirm Password:') !!}
+    {!! Form::password('password_confirmation', ['class' => 'form-control']) !!}
 </div>
 <?php } ?>
 

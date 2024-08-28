@@ -156,6 +156,10 @@
 <li class="{{ Request::is('teacherDetails*') ? 'active' : '' }}">
     <a href="{{ route('teacherDetails.index') }}"><i class="fa fa-edit"></i><span>Teacher Details</span></a>
 </li>
+
+<li class="{{ Request::is('user.data.overview*') ? 'active' : '' }}">
+    <a href="{{ route('user.data.overview') }}"><i class="fa fa-edit"></i><span>User Data Overview</span></a>
+</li>
 {{-- <li class="{{ Request::is('Subscriptions*') ? 'active' : '' }}">
     <a href="{{ route('subscriptions.index') }}"><i class="fa fa-edit"></i><span>Subscription Trnx</span></a>
 </li>--}}

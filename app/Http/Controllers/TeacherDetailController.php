@@ -80,7 +80,8 @@ class TeacherDetailController extends AppBaseController
             'teaching_resource' => 'required',
             'student_strength' => 'required',
             'number_of_token'  => 'required',
-            'password' => 'required'
+            'password' => 'required',
+            'password_confirmation' => 'required|same:password',
         ]);
         if ($validator->fails()) {
             return redirect()->back()
@@ -114,7 +115,7 @@ class TeacherDetailController extends AppBaseController
             'registration_type' => '4',
             'school_id' => $input['institute_id'],
         ]);
-        $teacher_plan = DB::table('subscription_plans')->where('validity',120)->first();
+        $teacher_plan = DB::table('subscription_plans')->where('validity',7)->first();
         $today = Carbon::today();
         $end_date = $today->addDays(120);
         DB::table('subscribers')->insert([

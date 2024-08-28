@@ -2,6 +2,12 @@
 
 @section('content')
 <div class="content-header">
+    <div class="warning-msg" style="text-align: center;">
+        <i class="fa fa-warning" style="background: rgb(228, 103, 103); color: black; padding: 5px;font-size:30px;margin-bottom:20px">
+          Book statistics are under development, will be showing correct data soon
+        </i>
+      </div>
+      
     <div class="row">
         {!! Form::open(["route" => "/home",'method'=>'GET', "id" => "dashboardForm"]) !!}
         <!-- Start Date Field -->
