@@ -245,9 +245,13 @@ tinymce.init({
                                 </li>
                                 <!-- Menu Footer-->
                                 <li class="user-footer">
+                                  <div class="row">
                                     <div class="pull-left">
                                         <a href="#" class="btn btn-default btn-flat">Profile</a>
                                     </div>
+                                    <div class="pull-left">
+                                      <a href="{{route('change.passwod')}}"  class="btn btn-default btn-flat">Change Password</a>
+                                  </div>
                                     <div class="pull-right">
                                         <a href="{!! url('/logout') !!}" class="btn btn-default btn-flat"
                                             onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
@@ -257,6 +261,7 @@ tinymce.init({
                                             {{ csrf_field() }}
                                         </form>
                                     </div>
+                                  </div>
                                 </li>
                             </ul>
                         </li>

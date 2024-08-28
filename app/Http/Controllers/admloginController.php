@@ -2,20 +2,21 @@
 
 namespace App\Http\Controllers;
 
-use App\DataTables\admloginDataTable;
+use DB;
+use Flash;
+use App\User;
+use Response;
 use App\Http\Requests;
+use App\Models\access_role;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use App\DataTables\admloginDataTable;
+use App\Repositories\admloginRepository;
+use App\Http\Controllers\AppBaseController;
 use App\Http\Requests\CreateadmloginRequest;
 use App\Http\Requests\UpdateadmloginRequest;
-use App\Repositories\admloginRepository;
 use App\Repositories\admin_accessRepository;
-use Flash;
-use App\Http\Controllers\AppBaseController;
-use App\Models\access_role;
-use Response;
-use Hash;
-use Auth;
-use DB;
-use App\User;
+use Illuminate\Validation\ValidationException;
 
 class admloginController extends AppBaseController
 {
@@ -210,4 +211,38 @@ class admloginController extends AppBaseController
 
         return redirect(route('admlogins.index'));
     }
+
+     //show change password page
+     public function changePasswod()
+     {
+         return view('admins.change-passwod');
+     }
+ 
+     // handle action of change password submit
+     public function changePasswodAction(UpdateadmloginRequest $request)
+     {   
+         // Validate the input
+         $validated = $request->validate([
+             'current_password' => ['required'],
+             'password_confirmation' => ['required','min:8'], // Adjust as needed
+         ]);
+         
+         $user = Auth::user();
+         
+         // Check if the current password matches
+         if (!Hash::check($validated['current_password'], $user->password)) {
+             throw ValidationException::withMessages([
+                 'current_password' => 'The provided password does not match our records.',
+             ]);
+         }
+         $user->password = Hash::make($validated['password_confirmation']);
+         $user->save();
+ 
+         // Optionally log the user out after changing the password
+         Auth::logout();
+ 
+         // Redirect to login page with a success message
+         return redirect('/login')->with('status', 'Password changed successfully. Please log in with your new password.');
+   
+     }
 }

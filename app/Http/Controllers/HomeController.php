@@ -1,14 +1,16 @@
 <?php
 
 namespace App\Http\Controllers;
-use Illuminate\Support\Facades\Auth;
-use DataTables;
-use App\Models\app_material;
-use App\Models\app_user;
-use App\Models\book_publisher;
-use Illuminate\Http\Request;
-use Illuminate\Database\Eloquent\Builder;
+use App\UserResources;
 use DB;
+use DataTables;
+use App\Models\app_user;
+use App\Models\app_material;
+use Illuminate\Http\Request;
+use App\Models\book_publisher;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Database\Eloquent\Builder;
+
 class HomeController extends Controller
 {
     /**
@@ -190,6 +192,41 @@ class HomeController extends Controller
             ->make(true);
         }
     }
+
+    public function UserDataOverview(Request $request)
+    {
+        if(isset(Auth::user()->access->access_role) &&  Auth::user()->access->access_role == 1 ){
+            if ($request->ajax()) {
+                $userRecords = UserResources::select('id', 'resource_type', 'name', 'email_address', 'mobile_number', 'birth_date', 'gender', 'personal_address', 'institution_address', 'resource_catalogue' ,'class' ,'summary', 'student_enrollment' ,'school_college_university_name' ,'preferred_segment') // Make sure to select the required fields
+                    ->get();
+                // Manually fetch the class_name for each record
+                foreach ($userRecords as $record) {
+                    $record->class = DB::table('class_master')
+                        ->where('id', $record->class)
+                        ->value('class_name'); // Get the class_name from class_master
+                    }
+                // Return DataTables instance
+                return DataTables::of($userRecords)
+                    ->addIndexColumn() // Add an index column for row numbers
+                    ->editColumn('resource_catalogue', function ($row) {
+                        // Check if resource_catalogue is not null or empty
+                        if (empty($row->resource_catalogue)) {
+                            return '-'; // Display a message or leave it blank
+                        }
+                    // Generate the URL for the file
+                    $filePath = env('API_URL')  . '/uploads/NBF_Publishers_Authors_Resource_Catalogue/' . $row->resource_catalogue;
+                    // Return a link to the file
+                    return '<a href="' . $filePath . '" target="_blank">View File</a>';
+            
+                    })
+                    
+                    ->rawColumns(['resource_catalogue']) // Allow raw HTML in the resource_catalogue and action columns
+                    ->make(true); // Return the JSON response
+            }
+            return view('userdataoverview');
+        }
+}
+
    
 
 }
