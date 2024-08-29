@@ -300,7 +300,8 @@ else { ?>
     
     // Add hide class to target element if selectedValue meets a certain condition
     if (selectedValue === '3') {
-      $('#addbtndiv').addClass('hide');
+		$('#addbtndiv').addClass('show');
+		$('#addbtn').text('Add chapter');  
     } else if (selectedValue === '5') {
 		$('#addbtndiv').addClass('show');
 		$('#addbtn').text('Add chapter');  // Set button text to "Add chapter"
