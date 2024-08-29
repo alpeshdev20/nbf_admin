@@ -1,46 +1,50 @@
 
 @extends('layouts.app')
-
 @section('content')  
-{{-- <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"/> --}}
-<link href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css" rel="stylesheet">
-{{-- <link href="https://cdn.datatables.net/1.10.21/css/dataTables.bootstrap4.min.css" rel="stylesheet"> --}}
-<div class="content-header">
-    <div class="row">
-        
-        <div class="table-responsive">
-            <table id="user-data-table" class="table table-striped table-dark mt-4">
-                <thead>
-                    <tr>
-                        <!-- <th>#</th> -->
-                        <th>Resource Type</th>
-                        <th>Name</th>
-                        <th>Email Address</th>
-                        <th>Mobile Number</th>
-                        <th>Birth Date</th>
-                        <th>Gender</th>
-                        <th>Personal Address</th>
-                        <th>Institution Address</th>
-                        <th>Summary</th>
-                        <th>Student Enrolement Number</th>
-                        <th>School / College / university</th>
-                        <th>Preferred Segment</th>
-                        <th>Class</th>
-                        <th>Resource Catalogue</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Table rows here -->
-                </tbody>
-            </table>
-        </div>
-        
+<section class="content-header mt-5">
+    <h1 class="pull-left" style="margin-bottom: 15px">User Data Overview</h1>
+</section>
+<div class="content">
+    <div class="clearfix"></div>
+    
+     @include('flash::message')
+
+     <div class="clearfix"></div>
+       <div class="box box-primary">
+          <div class="box-body">
+                @section('css')
+                    @include('layouts.datatables_css')
+                @endsection
+                      <div class="table-responsive display responsive ">
+                         <table id="user-data-table" class="table table-striped table-hover dt-responsive display nowrap"> 
+                                <thead>
+                                     <tr>
+                                        <!-- <th>#</th> -->
+                                        <th>Resource Type</th>
+                                        <th>Name</th>
+                                        <th>Email Address</th>
+                                        <th>Mobile Number</th>
+                                        <th>Birth Date</th>
+                                        <th>Gender</th>
+                                        <th>Personal Address</th>
+                                        <th>Institution Address</th>
+                                        <th>Summary</th>
+                                        <th>Student Enrolement Number</th>
+                                        <th>School / College / university</th>
+                                        <th>Preferred Segment</th>
+                                        <th>Class</th>
+                                        <th>Resource Catalogue</th>
+                                    </tr>
+                                </thead>
+                            </table>
+                        </div>
+            </div>
+         </div>
     </div>
-</div>    
     @section('scripts')
         @include('layouts.datatables_js')
     @endsection
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.0/jquery.validate.js"></script>
     <script>
         $(document).ready(function() {
             $('#user-data-table').DataTable({
