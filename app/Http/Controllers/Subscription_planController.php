@@ -2,22 +2,23 @@
 
 namespace App\Http\Controllers;
 
-use App\DataTables\Subscription_planDataTable;
-use App\Models\app_material;
-use App\Models\Subscription_plan;
-use App\Models\material;
-use App\Models\genre;
-use App\Models\app_department;
-use App\Models\app_subject;
-use App\Models\book_publisher;
-use App\Http\Requests\CreateSubscription_planRequest;
-use App\Http\Requests\UpdateSubscription_planRequest;
-use App\Repositories\Subscription_planRepository;
 use Flash;
-use App\Http\Controllers\AppBaseController;
 use Response;
 use Carbon\Carbon;
+use App\Models\genre;
+use App\Models\material;
+use App\Models\app_subject;
+use Illuminate\Support\Str;
+use App\Models\app_material;
+use App\Models\app_department;
+use App\Models\book_publisher;
+use App\Models\Subscription_plan;
 use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\AppBaseController;
+use App\DataTables\Subscription_planDataTable;
+use App\Repositories\Subscription_planRepository;
+use App\Http\Requests\CreateSubscription_planRequest;
+use App\Http\Requests\UpdateSubscription_planRequest;
 
 error_reporting(E_ERROR);
 
@@ -53,6 +54,9 @@ class Subscription_planController extends AppBaseController
         $mdata = material::all();
         $genre = genre::all();
         $pubdata = book_publisher::all();
+        $plan_paren_categories = DB::table('plan_parent_category')
+        ->select('id', 'name') // Assuming you have 'id' and 'name' columns
+        ->pluck('name', 'id'); 
         $subscriptionPlan = [];
         $selectedmdata = [];
         $selectedgenre = [];
@@ -65,7 +69,7 @@ class Subscription_planController extends AppBaseController
         //  foreach (array_values($category) as $i => $value) {
         //     echo "$i";
         //   }
-        return view('subscription_plans.create',compact('category','isFree','validity','getsub','selectedpublisher','getdept','selecteddept','selectedmdata','selectedgenre','configuration','mdata','genre','pubdata','subscriptionPlan'));
+        return view('subscription_plans.create',compact('category','isFree','validity','getsub','selectedpublisher','getdept','selecteddept','selectedmdata','selectedgenre','configuration','mdata','genre','pubdata','subscriptionPlan' ,'plan_paren_categories'));
     }
 
     /**
@@ -94,7 +98,23 @@ class Subscription_planController extends AppBaseController
           'allowed_publisher.required_if' => "Publisher is required",
         ]
     );
+        // Get the description from the request
+    $description = $request->input('description');
 
+    // Split the description into individual options by commas
+    $options = explode(',', $description);
+
+    // Trim and ensure each option ends with a comma
+    $updatedOptions = array_map(function($option) {
+        return trim($option) . ',,';
+    }, $options);
+
+    // Join the updated options back into a single string
+    $updatedDescription = implode(' ', $updatedOptions);
+    
+
+    // Now you can store the updated description in your database or use it as needed
+    $request->merge(['description' => $updatedDescription]);
         $input = $request->all();
         $input['content_key']  = strtoupper(Str::random(6));
         if($input['configuration_type'] == 0)
@@ -108,6 +128,7 @@ class Subscription_planController extends AppBaseController
             $input['allowed_department'] = implode(',',$request['allowed_department']);
             $input['allowed_subject'] = implode(',',$request['allowed_subject']);
         }
+        // $input['plan_parent_category_id'] = $request->input('plan_paren_categories', 0); 
 
         $subscriptionPlan = $this->subscriptionPlanRepository->create($input);
 

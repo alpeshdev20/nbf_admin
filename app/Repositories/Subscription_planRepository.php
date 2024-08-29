@@ -21,7 +21,8 @@ class Subscription_planRepository extends BaseRepository
         'price',
         'description',
         'validity',
-        'status'
+        'status',
+        'plan_parent_category_id'
     ];
 
     /**
