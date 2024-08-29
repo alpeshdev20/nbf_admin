@@ -45,7 +45,8 @@ class Subscription_plan extends Model
         'allowed_genres',
         'allowed_department',
         'allowed_subject',
-        'allowed_publisher'
+        'allowed_publisher',
+        'plan_parent_category_id',
     ];
 
     /**
