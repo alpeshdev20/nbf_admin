@@ -20,10 +20,10 @@
 </div>
 
 <div class="form-group col-sm-6">
-    {!! Form::label('plan_paren_categories', 'Parent Plan Category:') !!}
-    <select id="plan_parent_category_id" name="plan_parent_category_id" class='form-control text-dark'>
+    {!! Form::label('plan_parent_category_id', 'Parent Plan Category:') !!}
+    <select id="plan_parent_category_id" name="plan_parent_category_id" class="form-control text-dark">
         @foreach($plan_paren_categories as $id => $name)
-            <option value="{{ $id }}" {{ old('plan_paren_categories') == $id ? 'selected' : '' }}>
+            <option value="{{ $id }}" {{ $selected_parent_plan_category == $id ? 'selected' : '' }}>
                 {{ $name }}
             </option>
         @endforeach
@@ -114,7 +114,7 @@
 <!-- Description Field -->
 <div class="form-group col-sm-12 col-lg-12">
     {!! Form::label('description', 'Description:') !!}
-    {!! Form::textarea('description', null, ['class' => 'form-control' ,'placeholder' => 'Enter options separated by commas. Each comma-separated value will be considered as a new option.']) !!}
+    {!! Form::textarea('description', str_replace(',,', ',', $subscriptionPlan->description), ['class' => 'form-control', 'placeholder' => 'Enter options separated by commas. Each comma-separated value will be considered as a new option.']) !!}
 </div>
 
 <!-- Validity Field -->
