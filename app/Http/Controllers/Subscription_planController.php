@@ -105,9 +105,10 @@ class Subscription_planController extends AppBaseController
     $options = explode(',', $description);
 
     // Trim and ensure each option ends with a comma
-    $updatedOptions = array_map(function($option) {
-        return trim($option) . ',,';
-    }, $options);
+    $updatedOptions = array_map(function($option, $key) use ($options) {
+        // Append ',,' to every option except the last one
+        return trim($option) . ($key === array_key_last($options) ? '' : ',,');
+    }, $options, array_keys($options));
 
     // Join the updated options back into a single string
     $updatedDescription = implode(' ', $updatedOptions);
@@ -165,6 +166,7 @@ class Subscription_planController extends AppBaseController
      */
     public function edit($id)
     {
+
         $category = app_material::getMaterialCategories($id == '1');
         $configuration = Subscription_plan::getConfigurationType();
         $mdata = material::all();
@@ -181,13 +183,16 @@ class Subscription_planController extends AppBaseController
         $validity = $subscriptionPlan->validity;
         $getdept = app_department::whereIn('genre_id',$selectedgenre)->get();
         $getsub = app_subject::whereIn('department_id',$selecteddept)->get();
-
+        $selected_parent_plan_category = $subscriptionPlan->plan_parent_category_id;
+        $plan_paren_categories = DB::table('plan_parent_category')
+        ->select('id', 'name') // Assuming you have 'id' and 'name' columns
+        ->pluck('name', 'id');
         if (empty($subscriptionPlan)) {
             Flash::error('Subscription Plan not found');
 
             return redirect(route('subscriptionPlans.index'));
         }
-        return view('subscription_plans.edit',compact('subscriptionPlan','isFree','validity','selectedpublisher','getsub','getdept','selecteddept','selectedsub','category','mdata','configuration','selectedgenre','selectedmdata','genre','pubdata'));
+        return view('subscription_plans.edit',compact('subscriptionPlan','isFree','validity','selectedpublisher','getsub','getdept','selecteddept','selectedsub','category','mdata','configuration','selectedgenre','selectedmdata','genre','pubdata' , 'plan_paren_categories' ,'selected_parent_plan_category','description'));
     }
 
     /**
@@ -227,7 +232,22 @@ class Subscription_planController extends AppBaseController
 
             return redirect(route('subscriptionPlans.index'));
         }
+        // Get the description from the request
+        $description = $request->input('description');
 
+        // Split the description into individual options by commas
+        $options = explode(',', $description);
+
+        // Trim and ensure each option ends with a comma
+        $updatedOptions = array_map(function($option, $key) use ($options) {
+             // Append ',,' to every option except the last one
+             return trim($option) . ($key === array_key_last($options) ? '' : ',,');
+        }, $options, array_keys($options));
+     
+        // Join the updated options back into a single string
+        $updatedDescription = implode(' ', $updatedOptions);   
+        // Now you can store the updated description in your database or use it as needed
+        $request->merge(['description' => $updatedDescription]);
         $input = $request->all();
         if($input['configuration_type'] == 0)
         {
