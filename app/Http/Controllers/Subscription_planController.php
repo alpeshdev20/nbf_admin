@@ -166,7 +166,6 @@ class Subscription_planController extends AppBaseController
      */
     public function edit($id)
     {
-
         $category = app_material::getMaterialCategories($id == '1');
         $configuration = Subscription_plan::getConfigurationType();
         $mdata = material::all();
