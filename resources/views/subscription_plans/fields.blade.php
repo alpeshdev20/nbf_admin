@@ -114,7 +114,7 @@
 <!-- Description Field -->
 <div class="form-group col-sm-12 col-lg-12">
     {!! Form::label('description', 'Description:') !!}
-    {!! Form::textarea('description', str_replace(',,', ',', $subscriptionPlan->description), ['class' => 'form-control', 'placeholder' => 'Enter options separated by commas. Each comma-separated value will be considered as a new option.']) !!}
+    {!! Form::textarea('description', str_replace(',,', '', $subscriptionPlan->description), ['class' => 'form-control', 'placeholder' => 'Enter options separated by New Line. Each New Line value will be considered as a new option.']) !!}
 </div>
 
 <!-- Validity Field -->
