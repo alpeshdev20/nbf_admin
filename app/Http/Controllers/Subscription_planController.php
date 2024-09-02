@@ -99,23 +99,30 @@ class Subscription_planController extends AppBaseController
         ]
     );
         // Get the description from the request
-    $description = $request->input('description');
+        $description = $request->description; // Example description
+        
+        $lines = explode("\r\n", $description);
+        $options = [];
 
-    // Split the description into individual options by commas
-    $options = explode(',', $description);
+        foreach ($lines as $line) {
+            $trimmedLine = trim($line);
+            if (!empty($trimmedLine)) {
+                $options[] = $trimmedLine;
+            }
+        }
 
-    // Trim and ensure each option ends with a comma
-    $updatedOptions = array_map(function($option, $key) use ($options) {
-        // Append ',,' to every option except the last one
-        return trim($option) . ($key === array_key_last($options) ? '' : ',,');
-    }, $options, array_keys($options));
+        $lastOption = array_pop($options); // Remove the last option
+        $formattedOptions = array_map(function ($option) {
+            return $option . ',,';
+        }, $options);
 
-    // Join the updated options back into a single string
-    $updatedDescription = implode(' ', $updatedOptions);
-    
+        $formattedOptions[] = $lastOption; // Add the last option back without the trailing ",,"
 
-    // Now you can store the updated description in your database or use it as needed
-    $request->merge(['description' => $updatedDescription]);
+        $finalDescription = implode("\r\n", $formattedOptions);
+        
+        // Now you can store the updated description in your database or use it as needed
+        $request->merge(['description' => $finalDescription]);
+
         $input = $request->all();
         $input['content_key']  = strtoupper(Str::random(6));
         if($input['configuration_type'] == 0)
@@ -231,23 +238,32 @@ class Subscription_planController extends AppBaseController
 
             return redirect(route('subscriptionPlans.index'));
         }
-        // Get the description from the request
-        $description = $request->input('description');
 
-        // Split the description into individual options by commas
-        $options = explode(',', $description);
+        $description = $request->description; // Example description
+        
+        $lines = explode("\r\n", $description);
+        $options = [];
 
-        // Trim and ensure each option ends with a comma
-        $updatedOptions = array_map(function($option, $key) use ($options) {
-             // Append ',,' to every option except the last one
-             return trim($option) . ($key === array_key_last($options) ? '' : ',,');
-        }, $options, array_keys($options));
-     
-        // Join the updated options back into a single string
-        $updatedDescription = implode(' ', $updatedOptions);   
+        foreach ($lines as $line) {
+            $trimmedLine = trim($line);
+            if (!empty($trimmedLine)) {
+                $options[] = $trimmedLine;
+            }
+        }
+
+        $lastOption = array_pop($options); // Remove the last option
+        $formattedOptions = array_map(function ($option) {
+            return $option . ',,';
+        }, $options);
+
+        $formattedOptions[] = $lastOption; // Add the last option back without the trailing ",,"
+
+        $finalDescription = implode("\r\n", $formattedOptions);
+ 
         // Now you can store the updated description in your database or use it as needed
-        $request->merge(['description' => $updatedDescription]);
+        $request->merge(['description' => $finalDescription]);
         $input = $request->all();
+        
         if($input['configuration_type'] == 0)
         {
             $input['allowed_material'] ? $input['allowed_material'] = implode(',',$request['allowed_material']) : '';
