@@ -98,7 +98,7 @@ class HomeController extends Controller
             $user_statistic_det=array();
             $publisher = array();
             $appPublisher=array();
-            $publishers = book_publisher::where('user_id', Auth::user()->id)->get();
+            $publishers = book_publisher::get();
             foreach($publishers as $pub) {
                 $publisher[] = $pub->id;
             }
