@@ -90,33 +90,21 @@
                                 @else
                                 {{__('----')}}
                                 @endif</p></td>
-                        <td id="subscription_type"><p>@if (empty($data->subscriber))
-                        {{__('NA')}}
-                        @endif
-                        @if (!empty($data->subscriber) && !empty($data->subscriber->subscription->price) && $data->subscriber->subscription->price >= 199)
-                        {{__('P')}}
-                        @endif
-                        @if (!empty($data->subscriber) && !empty($data->subscriber->subscription->price) && $data->subscriber->subscription->price < 199)
-                        {{__('T')}}
-                        @endif</p></td>
-                        
-                        <?php
-                            $overall_read_time_s = $overall_read_time / 1000; // Convert milliseconds to seconds
-                            $minutes = floor($overall_read_time_s / 60); // Get minutes
-                            $seconds = floor($overall_read_time_s % 60); // Get remaining seconds
-                            ?>
-                      <td id="total_time_spent">
-                        <p>{{ $minutes }} minutes and {{ $seconds }} seconds</p>
-                      </td>
-
-                        <?php
-                            $total_time_span_s = $total_time_span / 1000; // Convert milliseconds to seconds
-                            $minutes = floor($total_time_span_s / 60); // Get minutes
-                            $seconds = floor($total_time_span_s % 60); // Get remaining seconds
-                        ?>
-                       <td id="time_spent_per_book">
-                         <p><?php echo "{$minutes} minutes and {$seconds} seconds"; ?></p>
-                       </td>                      
+                       <td id="subscription_type">
+                        <p>
+                            @if (empty($data->subscriber))
+                                {{ __('NA') }}
+                            @elseif (!empty($data->subscriber->plan_name) && $data->subscriber->plan_name === 'FREE')
+                                {{ __('Trial') }}
+                            @elseif ((!empty($data->subscriber->plan_name) && $data->subscriber->plan_name != 'FREE'))
+                                    {{ __('Paid') }}
+                            @else
+                                {{ __('NA') }} <!-- Optional: For cases where subscription price is not available -->
+                            @endif
+                        </p>
+                       </td>
+                        <td id="total_time_spent"><p>{{floor($overall_read_time/60)}}</p></td>
+                        <td id="time_spent_per_book"><p>{{floor($total_time_span/60)}}</p></td>
                         <td id="booksviewd"><p>@include('Box.booksinfo'){{ $book_count }}</p></td>
             
                     </tr>
@@ -126,23 +114,8 @@
                             <td id="sn"></td>
                     <td id="sn"><b>{{__('TOTAL:')}}</b></td>
                     <td id="sn"></td>
-                    <?php
-                        $totalOverall_s = $totalOverall / 1000; // Convert milliseconds to seconds
-                        $minutes = floor($totalOverall_s / 60); // Get minutes
-                        $seconds = floor($totalOverall_s % 60); // Get remaining seconds
-                    ?>
-                    <td id="sn">
-                         <b><?php echo "{$minutes} minutes and {$seconds} seconds"; ?></b>
-                    </td>
-                    
-                    <?php
-                        $total_s = $total / 1000; // Convert milliseconds to seconds
-                        $minutes = floor($total_s / 60); // Calculate minutes
-                        $seconds = floor($total_s % 60); // Calculate remaining seconds
-                    ?>
-                    <td id="sn">
-                        <b><?php echo "{$minutes} minutes and {$seconds} seconds"; ?></b>
-                    </td>
+                    <td id="sn"><b>{{floor($totalOverall/60)}}</b></td>
+                    <td id="sn"><b>{{floor($total/60)}}</b></td>
                     <td id="sn"></td>
                     </tr>
                 @else
@@ -186,14 +159,8 @@
             <tr id="status_row">                    
                 <td id="sn"><p>{{ ++$sn }}</p></td>
                 <td id="book_name"><p>{{ $bookname }}</p></td>
-                <?php
-                    $total_read_s = $total_read / 1000; // Convert milliseconds to seconds
-                    $minutes = floor($total_read_s / 60); // Calculate minutes
-                    $seconds = floor($total_read_s % 60); // Calculate remaining seconds
-                ?>
-                <td id="total_read_time">
-                    <p><?php echo "{$minutes} minutes and {$seconds} seconds"; ?></p>
-                </td>
+                
+                <td id="total_read_time"><p>{{ floor($total_read/60)}}</p></td>
                 <td id="user_count"><p>@include('Box.usersinfo'){{ $usercount }}</p></td>
 
             </tr>
@@ -201,14 +168,7 @@
             <tr id="status_row">
             <td id="sn"></td>
             <td id="sn"><b>{{__('TOTAL:')}}</b></td>
-                @php
-                    $totalOverall_s = $totalOverall / 1000; // Convert milliseconds to seconds
-                    $minutes = floor($totalOverall_s / 60); // Calculate minutes
-                    $seconds = floor($totalOverall_s % 60); // Calculate remaining seconds
-                @endphp
-            <td id="sn">
-                <b>{{ $minutes }} minutes and {{ $seconds }} seconds</b>
-            </td>
+            <td id="sn"><b>{{floor($totalOverall/60)}}</b></td>
             <td id="sn"></td>
             </tr>
             @else
