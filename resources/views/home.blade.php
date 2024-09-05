@@ -78,13 +78,22 @@
                     ?>
                     <tr id="status_row">                    
                         <td id="sn"><p>{{ ++$sn }}</p></td>
-                        <td id="user_type"><p>
-                        @if (empty($data->subscriber))
-                        {{__('E')}}
-                        @endif
-                        @if (!empty($data->subscriber))
-                        {{__('N')}}
-                        @endif</p></td>
+                        <td id="user_type">
+                            <p>
+                                @if (empty($data->subscriber))
+                                    <!-- Link for Existing User -->
+                                <a href="#" data-id="{{ $data->id }}" class="btn user-modal-trigger-1" data-toggle="modal" data-target="#userModal{{ $data->id }}">
+                                        {{ __('E') }}
+                                    </a>
+                                @else
+                                    <!-- Link for New User -->
+                                    <a href="#" data-id="{{ $data->id }}" class="btn user-modal-trigger-1"data-toggle="modal" data-target="#userModal{{ $data->id }}">
+                                        {{ __('N') }}
+                                    </a>
+                                @endif
+                            </p>
+                        </td>
+                        
                         <td id="location"><p>@if ($data->analytics[0]->location)
                                 {{$data->analytics[0]->location}}
                                 @else
@@ -106,8 +115,35 @@
                         <td id="total_time_spent"><p>{{floor($overall_read_time/60)}}</p></td>
                         <td id="time_spent_per_book"><p>{{floor($total_time_span/60)}}</p></td>
                         <td id="booksviewd"><p>@include('Box.booksinfo'){{ $book_count }}</p></td>
-            
+                        <!-- Modal for User Details -->
                     </tr>
+                    <div class="modal fade" id="userModal{{ $data->id }}" tabindex="-1" role="dialog" aria-labelledby="userModalLabel{{ $data->id }}" aria-hidden="true">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="userModalLabel{{ $data->id }}">User Details</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <p>User Name: {{ $data->name }}</p>
+                                    <p>User Email: {{ $data->email }}</p>
+                                    <p>User Mobile: {{ $data->mobile }}</p>
+                                    <p>Plan Name: {{ $data->subscriber->plan_name ?? 'Not Available' }}</p>
+                                    <p>User Gender: {{ $data->gender }}</p>
+                                    <p>User Personal Address: {{ $data->personal_address }}</p>
+                                    <p>User Institute Address: {{ $data->institute_address }}</p>
+                                    
+                                     <!-- Add more user-specific details here -->
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="submit" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
                 @endforeach
                     <tr id="status_row">
                             <td id="sn"></td>
@@ -281,6 +317,16 @@
             },
         ]
     });
+
+    //show user
+    $('.user-modal-trigger').on('click', function() {
+        var userId = $(this).data('id');
+                
+        // Show the modal
+        $('#userModal' + userId).modal('show');
+    });
+
+
     
   });
 </script>
