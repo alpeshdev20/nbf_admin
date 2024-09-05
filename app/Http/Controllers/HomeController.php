@@ -49,15 +49,44 @@ class HomeController extends Controller
             $data_count=0;//164 books count
             if($Publisherbookscount>0){
             foreach($Publisherbooks as $book){    
-                if($request->has('from_date')&&$request->has('from_date')){
-                    $data=\App\Models\app_book_analytic::where('book_id',$book->id)->whereDate('created_at','>', $input['from_date'])->whereDate('created_at','<', $input['to_date'])->with(['user','user.subscriber','user.subscriber.subscription','book'])->get();
-                    $data_c=\App\Models\app_book_analytic::where('book_id',$book->id)->whereDate('created_at','>', $input['from_date'])->whereDate('created_at','<', $input['to_date'])->with(['user','user.subscriber','user.subscriber.subscription','book'])->count();
+                if ($request->has('from_date') && $request->has('to_date')) {
+                    // Fetch data where either created_at or updated_at falls within the date range
+                    $data = \App\Models\app_book_analytic::where('book_id', $book->id)
+                        ->where(function ($query) use ($input) {
+                            $query->whereDate('created_at', '>', $input['from_date'])
+                                  ->whereDate('created_at', '<', $input['to_date'])
+                                  ->orWhere(function ($query) use ($input) {
+                                      $query->whereDate('updated_at', '>', $input['from_date'])
+                                            ->whereDate('updated_at', '<', $input['to_date']);
+                                  });
+                        })
+                        ->with(['user', 'user.subscriber', 'user.subscriber.subscription', 'book'])
+                        ->get();
+                
+                    // Count data where either created_at or updated_at falls within the date range
+                    $data_c = \App\Models\app_book_analytic::where('book_id', $book->id)
+                        ->where(function ($query) use ($input) {
+                            $query->whereDate('created_at', '>', $input['from_date'])
+                                  ->whereDate('created_at', '<', $input['to_date'])
+                                  ->orWhere(function ($query) use ($input) {
+                                      $query->whereDate('updated_at', '>', $input['from_date'])
+                                            ->whereDate('updated_at', '<', $input['to_date']);
+                                  });
+                        })
+                        ->with(['user', 'user.subscriber', 'user.subscriber.subscription', 'book'])
+                        ->count();
+                } else {
+                    // Fetch all data if no date range is provided
+                    $data = \App\Models\app_book_analytic::where('book_id', $book->id)
+                        ->with(['user', 'user.subscriber', 'user.subscriber.subscription', 'book'])
+                        ->get();
+                
+                    // Count all data if no date range is provided
+                    $data_c = \App\Models\app_book_analytic::where('book_id', $book->id)
+                        ->with(['user', 'user.subscriber', 'user.subscriber.subscription', 'book'])
+                        ->count();
                 }
-                else{
-
-                    $data=\App\Models\app_book_analytic::where('book_id',$book->id)->with(['user','user.subscriber','user.subscriber.subscription','book'])->get();
-                    $data_c=\App\Models\app_book_analytic::where('book_id',$book->id)->with(['user','user.subscriber','user.subscriber.subscription','book'])->count();
-                }
+                
                 if($data_c>0){
                     $data_count+=$data_c;
                         $user_statistic_det[]=$data;
@@ -74,14 +103,44 @@ class HomeController extends Controller
             $user_statistic_det = array();
             foreach($books as $book) {
                
-                if($request->has('from_date')&&$request->has('from_date')){
-                    $data=\App\Models\app_book_analytic::where('book_id',$book->id)->whereDate('created_at','>', $input['from_date'])->whereDate('created_at','<', $input['to_date'])->with(['user','user.subscriber','user.subscriber.subscription','book'])->get();
-                    $data_c=\App\Models\app_book_analytic::where('book_id',$book->id)->whereDate('created_at','>', $input['from_date'])->whereDate('created_at','<', $input['to_date'])->with(['user','user.subscriber','user.subscriber.subscription','book'])->count();
+                if ($request->has('from_date') && $request->has('to_date')) {
+                    // Fetch data with both created_at and updated_at date range filters
+                    $data = \App\Models\app_book_analytic::where('book_id', $book->id)
+                        ->where(function ($query) use ($input) {
+                            $query->whereDate('created_at', '>', $input['from_date'])
+                                  ->whereDate('created_at', '<', $input['to_date'])
+                                  ->orWhere(function ($query) use ($input) {
+                                      $query->whereDate('updated_at', '>', $input['from_date'])
+                                            ->whereDate('updated_at', '<', $input['to_date']);
+                                  });
+                        })
+                        ->with(['user', 'user.subscriber', 'user.subscriber.subscription', 'book'])
+                        ->get();
+                
+                    // Count data with both created_at and updated_at date range filters
+                    $data_c = \App\Models\app_book_analytic::where('book_id', $book->id)
+                        ->where(function ($query) use ($input) {
+                            $query->whereDate('created_at', '>', $input['from_date'])
+                                  ->whereDate('created_at', '<', $input['to_date'])
+                                  ->orWhere(function ($query) use ($input) {
+                                      $query->whereDate('updated_at', '>', $input['from_date'])
+                                            ->whereDate('updated_at', '<', $input['to_date']);
+                                  });
+                        })
+                        ->with(['user', 'user.subscriber', 'user.subscriber.subscription', 'book'])
+                        ->count();
+                } else {
+                    // Fetch all data if no date range is specified
+                    $data = \App\Models\app_book_analytic::where('book_id', $book->id)
+                        ->with(['user', 'user.subscriber', 'user.subscriber.subscription', 'book'])
+                        ->get();
+                
+                    // Count all data if no date range is specified
+                    $data_c = \App\Models\app_book_analytic::where('book_id', $book->id)
+                        ->with(['user', 'user.subscriber', 'user.subscriber.subscription', 'book'])
+                        ->count();
                 }
-                else{
-                    $data=\App\Models\app_book_analytic::where('book_id',$book->id)->with(['user','user.subscriber','user.subscriber.subscription','book'])->get();
-                    $data_c=\App\Models\app_book_analytic::where('book_id',$book->id)->with(['user','user.subscriber','user.subscriber.subscription','book'])->count();
-                }
+                
 
                 if($data_c>0){
                     $data_count+=$data_c;
@@ -109,20 +168,72 @@ class HomeController extends Controller
             $User_rec=app_user::with(['subscriber','subscriber.subscription','analytics'=>function ( $query) use ($books) {
                 $query->whereIn('book_id',$books);
             },'analytics.book','analytics.user']);
-            if($request->has('from_date')&&$request->has('to_date')){
-                $User_rec_count=app_user::with(['subscriber','subscriber.subscription','analytics'=>function ( $query) use ($books,$input) {
-                    $query->whereIn('book_id',$books)->whereDate('created_at','>', $input['from_date'])->whereDate('created_at','<', $input['to_date']);
-                },'analytics.book','analytics.user']);
-                $User_rec=app_user::with(['subscriber','subscriber.subscription','analytics'=>function ( $query) use ($books,$input) {
-                    $query->whereIn('book_id',$books)->whereDate('created_at','>', $input['from_date'])->whereDate('created_at','<', $input['to_date']);
-                },'analytics.book','analytics.user']);
-                $User_rec_count=$User_rec_count->whereHas('analytics', function (Builder $query) use ($books,$input) {
-                    $query->whereIn('book_id',$books)->whereDate('created_at','>', $input['from_date'])->whereDate('created_at','<', $input['to_date']);
-                })
-                ->count();
-                $User_rec=$User_rec->has('analytics')->orderBy('id','desc')->get();
-                return view('home')->with(['input'=>$input,'user_statistic_det'=>$User_rec,'data_count'=>$User_rec_count]);
+            if ($request->filled('from_date') && $request->filled('to_date')) {
+                // Query for user analytics with created_at and updated_at date range filters
+                $User_rec_count = app_user::with(['subscriber', 'subscriber.subscription', 'analytics' => function ($query) use ($books, $input) {
+                    $query->whereIn('book_id', $books)
+                          ->where(function ($query) use ($input) {
+                              // Filter by both created_at and updated_at
+                              $query->whereDate('created_at', '>=', $input['from_date'])
+                                    ->whereDate('created_at', '<=', $input['to_date'])
+                                    ->orWhere(function ($query) use ($input) {
+                                        $query->whereDate('updated_at', '>=', $input['from_date'])
+                                              ->whereDate('updated_at', '<=', $input['to_date']);
+                                    });
+                          });
+                }, 'analytics.book', 'analytics.user']);
+            
+                $User_rec = app_user::with(['subscriber', 'subscriber.subscription', 'analytics' => function ($query) use ($books, $input) {
+                    $query->whereIn('book_id', $books)
+                          ->where(function ($query) use ($input) {
+                              // Filter by both created_at and updated_at
+                              $query->whereDate('created_at', '>=', $input['from_date'])
+                                    ->whereDate('created_at', '<=', $input['to_date'])
+                                    ->orWhere(function ($query) use ($input) {
+                                        $query->whereDate('updated_at', '>=', $input['from_date'])
+                                              ->whereDate('updated_at', '<=', $input['to_date']);
+                                    });
+                          });
+                }, 'analytics.book', 'analytics.user']);
+            
+                // Filter analytics using both created_at and updated_at date range
+                $User_rec_count = $User_rec_count->whereHas('analytics', function (Builder $query) use ($books, $input) {
+                    $query->whereIn('book_id', $books)
+                          ->where(function ($query) use ($input) {
+                              $query->whereDate('created_at', '>=', $input['from_date'])
+                                    ->whereDate('created_at', '<=', $input['to_date'])
+                                    ->orWhere(function ($query) use ($input) {
+                                        $query->whereDate('updated_at', '>=', $input['from_date'])
+                                              ->whereDate('updated_at', '<=', $input['to_date']);
+                                    });
+                          });
+                })->count();
+            
+                // Retrieve filtered records
+                $User_rec = $User_rec->has('analytics')->orderBy('id', 'desc')->get();
+            
+                // Prepare data table
+                $dataTable = DataTables::of($User_rec)
+                    ->addIndexColumn()
+                    ->addColumn('action', function ($row) {
+                        $actionBtn = '<a href="/home" class="btn btn-default btn-xs">
+                                      <i class="glyphicon glyphicon-eye-open"></i></a> 
+                                      <a href="javascript:void(0)" class="edit btn btn-success btn-sm">Edit</a> 
+                                      <a href="javascript:void(0)" class="delete btn btn-danger btn-sm">Delete</a>';
+                        return $actionBtn;
+                    })
+                    ->rawColumns(['action'])
+                    ->make(true);
+            
+                // Return the view with the data
+                return view('home')->with([
+                    'user_statistic_det' => $User_rec,
+                    'data_count' => $User_rec_count,
+                    'dataTable' => $dataTable,
+                    'books' => $books
+                ]);
             }
+            
             $User_rec_count=$User_rec_count->has('analytics')->count();
             $User_rec=$User_rec->has('analytics')->orderBy('id','desc')->get();
             // dd($User_rec);
