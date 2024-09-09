@@ -2,23 +2,25 @@
 
 namespace App\Http\Controllers;
 
-use App\DataTables\TeacherDetailDataTable;
+use DB;
+use Flash;
+use Response;
+use Carbon\Carbon;
 use App\Http\Requests;
+use App\Models\School;
+use Illuminate\Support\Str;
+use Illuminate\Http\Request;
+use App\Imports\ImportAppTeachers;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Mail\TeacherSubscriptionMail;
+use Illuminate\Support\Facades\Validator;
+use App\DataTables\TeacherDetailDataTable;
+use App\Http\Controllers\AppBaseController;
+use App\Repositories\TeacherDetailRepository;
 use App\Http\Requests\CreateTeacherDetailRequest;
 use App\Http\Requests\UpdateTeacherDetailRequest;
-use App\Repositories\TeacherDetailRepository;
-use Flash;
-use App\Http\Controllers\AppBaseController;
-use Response;
-use App\Imports\ImportAppTeachers;
-use Illuminate\Http\Request;
-use Maatwebsite\Excel\Facades\Excel;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
-use App\Models\School;
-use Carbon\Carbon;
-use Illuminate\Support\Facades\Validator;
-use DB;
 
 class TeacherDetailController extends AppBaseController
 {
@@ -129,7 +131,13 @@ class TeacherDetailController extends AppBaseController
         ]);
         $input['password'] = Hash::make($input['password']);
         $teacherDetail = $this->teacherDetailRepository->create($input);
-        EmailHelper::sendEmail($input['email'], $subject, $message);
+
+         
+        // $email = EmailHelper::sendEmail($input['email'], $subject, $message);
+        
+        // / Send email using Laravel Mail
+        Mail::to($input['email'])->send(new TeacherSubscriptionMail($input['teacher_name'], $Pass));
+
         Flash::success('Teacher Detail saved successfully and password sent to the registered email.');
 
         return redirect(route('teacherDetails.index'));
