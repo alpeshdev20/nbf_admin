@@ -8,6 +8,7 @@ use App\User;
 use Response;
 use App\Http\Requests;
 use App\Models\access_role;
+use App\Models\app_user;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\DataTables\admloginDataTable;
@@ -65,7 +66,18 @@ class admloginController extends AppBaseController
     public function store(CreateadmloginRequest $request)
     {
         $request->validate([
-            'email' => 'required|email|unique:u_logins,email',
+            'email' => [
+            'required',
+            'email',
+            function ($attribute, $value, $fail) {
+                $existsInUlogins = DB::table('u_logins')->where('email', $value)->exists();
+                $existsInAdmlogin = DB::table('admlogin')->where('email', $value)->exists();
+
+                if ($existsInUlogins || $existsInAdmlogin) {
+                    $fail('The email has already been taken.');
+                }
+            },
+        ],
             'name' => 'required|string|max:255',
             'password' => 'required|string|min:8',
             'access_role' => 'required|integer', 
@@ -167,6 +179,15 @@ class admloginController extends AppBaseController
      */
     public function update($id, UpdateadmloginRequest $request)
     {
+       
+        $request->validate([
+            "email" => 'required',
+            'name' => 'required|string|max:255',
+            'password' => 'required|string|min:8',
+            'access_role' => 'required|integer', 
+            'active' => 'required|boolean',
+            ]);
+
         $admlogin = $this->admloginRepository->find($id);
 
         if (empty($admlogin)) {
@@ -192,6 +213,26 @@ class admloginController extends AppBaseController
         }
 
         $admlogin = $this->admloginRepository->update($input, $id);
+
+        $type = '';
+        $Userid = '';
+        $appUser = app_user::where('email', $request->email)->first();
+        if (!$appUser) {
+            throw new \Exception('User not found');
+        }
+        else{
+            $Userid = $appUser->id;
+        }
+        if ($request->access_role == 2) {
+            $type = 'publisher';
+                $Userid = $appUser->id;
+                $appuserLogin = $this->admloginRepository->UpdateAppUser($input ,$type ,$Userid);
+        } elseif ($request->access_role == 3) {
+            $type = 'teacher';
+            $appuserLogin = $this->admloginRepository->UpdateAppUser($input ,$type ,$Userid);
+        }  else {
+            $type = ''; // Handle other cases if needed
+        }
 
         $nData = array();
         $nData["admin_id"] = $id;
