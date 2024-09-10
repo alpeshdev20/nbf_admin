@@ -30,7 +30,8 @@ class app_user extends Model
         'name',
         'email',
         'password',
-        'mobile'
+        'mobile',
+        'type'
     ];
 
     public $hidden = [

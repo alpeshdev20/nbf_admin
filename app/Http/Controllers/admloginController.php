@@ -64,8 +64,17 @@ class admloginController extends AppBaseController
      */
     public function store(CreateadmloginRequest $request)
     {
-        $input = $request->all();
+        $request->validate([
+            'email' => 'required|email|unique:u_logins,email',
+            'name' => 'required|string|max:255',
+            'password' => 'required|string|min:8',
+            'access_role' => 'required|integer', 
+            'active' => 'required|boolean',
+            ]);
 
+        $input = $request->all();
+        
+       
         $role = $input["access_role"];
 
         $active = $input["active"];
@@ -77,7 +86,19 @@ class admloginController extends AppBaseController
         $input["password"] =  Hash::make($input["password"]);
 
         $admlogin = $this->admloginRepository->create($input);
+        
+        $type = '';
 
+        if ($request->access_role == 2) {
+            $type = 'publisher';
+            $appuserLogin = $this->admloginRepository->CreateAppUser($input ,$type);
+        } elseif ($request->access_role == 3) {
+            $type = 'teacher';
+            $appuserLogin = $this->admloginRepository->CreateAppUser($input ,$type);
+        }  else {
+            $type = ''; // Handle other cases if needed
+        }
+        
         $nData = array();
         $nData["admin_id"] = $admlogin["id"];
         $nData["access_role"] = $role;
