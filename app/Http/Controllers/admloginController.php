@@ -16,6 +16,7 @@ use App\Repositories\admloginRepository;
 use App\Http\Controllers\AppBaseController;
 use App\Http\Requests\CreateadmloginRequest;
 use App\Http\Requests\UpdateadmloginRequest;
+use App\Models\admlogin;
 use App\Repositories\admin_accessRepository;
 use Illuminate\Validation\ValidationException;
 
@@ -98,15 +99,15 @@ class admloginController extends AppBaseController
         $input["password"] =  Hash::make($input["password"]);
 
         $admlogin = $this->admloginRepository->create($input);
-        
+        $parent_user = $admlogin->id;
         $type = '';
 
         if ($request->access_role == 2) {
             $type = 'publisher';
-            $appuserLogin = $this->admloginRepository->CreateAppUser($input ,$type);
+            $appuserLogin = $this->admloginRepository->CreateAppUser($input ,$type ,$parent_user);
         } elseif ($request->access_role == 3) {
             $type = 'teacher';
-            $appuserLogin = $this->admloginRepository->CreateAppUser($input ,$type);
+            $appuserLogin = $this->admloginRepository->CreateAppUser($input ,$type, $parent_user);
         }  else {
             $type = ''; // Handle other cases if needed
         }
@@ -178,16 +179,73 @@ class admloginController extends AppBaseController
      * @return Response
      */
     public function update($id, UpdateadmloginRequest $request)
-    {
-       
+    {   
+        $type = '';
+        if ($request->access_role == 2) {
+            $type = 'publisher';
+            $appUser = app_user::where(['email' => $request->email , 'type' =>$type])->first();
+            if($appUser)
+            {
+                if (is_null($appUser->parent_user) || empty($appUser->parent_user)) {
+                    $appUser->parent_user = $id;
+                    $appUser->save(); 
+                }
+            }
+        } elseif ($request->access_role == 3) {
+            $type = 'teacher';
+            $appUser = app_user::where(['email' => $request->email , 'type' =>$type])->first();
+            if($appUser)
+            {
+                if (is_null($appUser->parent_user) || empty($appUser->parent_user)) {
+                    $appUser->parent_user = $id;
+                    $appUser->save(); 
+                }
+            } 
+        }
+
         $request->validate([
-            "email" => 'required',
+            'email' => [
+                'required',
+                'email:rfc,dns',
+                function ($attribute, $value, $fail) use ($id, $appUser) {
+                    // Check if $appUser is null, skip validation in u_logins if it is
+                    if ($appUser) {
+                        // Check email uniqueness in `u_logins`, excluding current user by ID
+                        $existsInUlogins = DB::table('u_logins')
+                            ->where('email', $value)
+                            ->where('id', '!=', $appUser->id) // Exclude current user by ID
+                            ->exists();
+                        if ($existsInUlogins) {
+                            $fail('The email has already been taken in App user.');
+                        }
+
+                        // Check email uniqueness in `admlogin` if app user exists
+                        $existsInAdmlogin = DB::table('admlogin')
+                            ->where('email', $value)
+                            ->where('id', '!=', $id) // Exclude current admin user by ID
+                            ->exists();
+
+                        if ($existsInAdmlogin) {
+                            $fail('The email has already been taken in admin logins.');
+                        }
+                    } else {
+                        // If $appUser is null, only check email uniqueness in `admlogin`
+                        $existsInAdmlogin = DB::table('admlogin')
+                            ->where('email', $value)
+                            ->where('id', '!=', $id) // Exclude current admin user by ID
+                            ->exists();
+
+                        if ($existsInAdmlogin) {
+                            $fail('The email has already been taken in admin logins.');
+                        }
+                    }
+                },
+            ],
             'name' => 'required|string|max:255',
             'password' => 'required|string|min:8',
-            'access_role' => 'required|integer', 
+            'access_role' => 'required|integer',
             'active' => 'required|boolean',
-            ]);
-
+        ]);
         $admlogin = $this->admloginRepository->find($id);
 
         if (empty($admlogin)) {
@@ -211,28 +269,36 @@ class admloginController extends AppBaseController
         } else {
             unset($input["password"]);
         }
-
         $admlogin = $this->admloginRepository->update($input, $id);
-
+        $parent_user = $admlogin->id;
         $type = '';
         $Userid = '';
-        $appUser = app_user::where('email', $request->email)->first();
-        if (!$appUser) {
-            throw new \Exception('User not found');
+        $appUser = app_user::where('parent_user', $id)->first();
+        if (!$appUser) { 
+            if ($request->access_role == 2) {
+                $type = 'publisher';
+                $appuserLogin = $this->admloginRepository->CreateAppUser($input ,$type ,$parent_user);
+            } elseif ($request->access_role == 3) {
+                $type = 'teacher';
+                $appuserLogin = $this->admloginRepository->CreateAppUser($input ,$type, $parent_user);
+            }  else {
+                $type = ''; // Handle other cases if needed
+            }
         }
         else{
             $Userid = $appUser->id;
-        }
-        if ($request->access_role == 2) {
-            $type = 'publisher';
-                $Userid = $appUser->id;
+            if ($request->access_role == 2) {
+                $type = 'publisher';
+                    $Userid = $appUser->id;
+                    $appuserLogin = $this->admloginRepository->UpdateAppUser($input ,$type ,$Userid);
+            } elseif ($request->access_role == 3) {
+                $type = 'teacher';
                 $appuserLogin = $this->admloginRepository->UpdateAppUser($input ,$type ,$Userid);
-        } elseif ($request->access_role == 3) {
-            $type = 'teacher';
-            $appuserLogin = $this->admloginRepository->UpdateAppUser($input ,$type ,$Userid);
-        }  else {
-            $type = ''; // Handle other cases if needed
+            }  else {
+                $type = ''; // Handle other cases if needed
+            }
         }
+
 
         $nData = array();
         $nData["admin_id"] = $id;

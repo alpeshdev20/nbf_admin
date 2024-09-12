@@ -27,6 +27,7 @@ class admloginRepository extends BaseRepository
         'password',
         'remember_token',
         'type',
+        'parent_user',
     ];
 
     /**
@@ -48,10 +49,12 @@ class admloginRepository extends BaseRepository
     }
 
     // Function to store data in both admlogin and app_user tables
-    public function CreateAppUser($admloginData,$type)
+    public function CreateAppUser($admloginData,$type ,$parent_user)
     {
         DB::beginTransaction();
-        // try {
+        try {
+            
+            $admloginData['parent_user'] = $parent_user;
             $admloginData['type'] = $type;   
             // Store data in app_user table
             $appUser = app_user::create($admloginData);
@@ -94,10 +97,10 @@ class admloginRepository extends BaseRepository
             
             DB::commit();
             return [ 'app_user' => $appUser];
-        // } catch (\Exception $e) {
-        //     DB::rollback();
-        //     throw $e;
-        // }
+        } catch (\Exception $e) {
+            DB::rollback();
+            throw $e;
+        }
     }
 
 

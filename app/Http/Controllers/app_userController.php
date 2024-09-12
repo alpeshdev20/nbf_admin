@@ -2,16 +2,27 @@
 
 namespace App\Http\Controllers;
 
-use App\DataTables\app_userDataTable;
+use app;
+use Flash;
+use Response;
+use Carbon\Carbon;
 use App\Http\Requests;
+use App\Models\admlogin;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
+use App\Models\Subscription_plan;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use App\DataTables\app_userDataTable;
+use App\Models\UsersActiveSubscriptions;
+use App\Repositories\app_userRepository;
+use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Validator;
+use App\Http\Controllers\AppBaseController;
 use App\Http\Requests\Createapp_userRequest;
 use App\Http\Requests\Updateapp_userRequest;
-use App\Repositories\app_userRepository;
-use Illuminate\Http\Request;
-use Flash;
-use DB;
-use App\Http\Controllers\AppBaseController;
-use Response;
+use App\Models\app_user;
+
 
 class app_userController extends AppBaseController
 {
@@ -41,7 +52,14 @@ class app_userController extends AppBaseController
      */
     public function create()
     {
-        return view('app_users.create');
+        // Retrieve all data from class_master
+        $classes = DB::table('class_master')->get();
+        
+        // Format data for select field
+        $classesData = $classes->pluck('class_name', 'id')->toArray(); 
+        $subscriptions = Subscription_plan::select('id','name', 'price', 'plan_category', 'validity')->get();
+
+        return view('app_users.create', compact('classesData' ,'subscriptions'));
     }
 
     /**
@@ -52,10 +70,90 @@ class app_userController extends AppBaseController
      * @return Response
      */
     public function store(Createapp_userRequest $request)
-    {
-        $input = $request->all();
+    {  
+        $validator = Validator::make($request->all(),[
+            'user_type' => 'required',
+            'name' => 'required|string|between:3,255',
+            'email' => [
+                'required',
+                'email:rfc,dns',
+                function ($attribute, $value, $fail) {
+                    $existsInUlogins = DB::table('u_logins')->where('email', $value)->exists();
+                    $existsInAdmlogin = DB::table('admlogin')->where('email', $value)->exists();
 
+                    if ($existsInUlogins || $existsInAdmlogin) {
+                        $fail('The email has already been taken.');
+                    }
+                },
+            ],
+            'mobile' => 'required|numeric|digits:10|unique:u_logins,mobile',
+            'password' => 'required|string|min:8',
+            'birthday' => 'required|date',
+            'gender' => 'required|in:Male,Female,Others',
+            'preferred_segment' => 'required|in:K12/School,Higher Education',
+            'class' => 'required_if:preferred_segment,K12/School|nullable|numeric|exists:class_master,id',
+            'personal_address' => 'required|string',
+            'institute_address' => 'required|string',
+            // Uncomment if needed
+            // 'registration_type' => 'required|in:0,3',
+            // 'registration_token' => 'required_if:registration_type,3',
+        ], [
+            "registration_token.required_if" => "Registration token is required",
+            'registration_type.in' => 'User Type is either Individual User or Institutional User',
+        ]);
+
+        // Check if validation fails
+        if ($validator->fails()) {
+            // Return with errors
+            return Redirect::back()
+                ->withErrors($validator)
+                ->withInput();
+        }
+
+        $input = $request->all();
+       
+        //* updating Password
+        // Create the user with hashed password
+        $input['password'] = Hash::make(trim($request->input('password')));
+        $input['type']= 'App User';
         $appUser = $this->appUserRepository->create($input);
+        // $userId = 1000;
+        $planId = $request->subscription_plan;
+        //* Getting Plan Info
+        $plan = Subscription_plan::find($planId)->first();    
+        
+        //* Activating User Free Plan
+        if ($plan) {
+            $planName = $plan->name;
+            $planPrice = $plan->price;
+            $planDescription = $plan->description;
+            $planValidity = $plan->validity;
+            $validity = $plan->validity;
+            $validity = $plan->validity; // This is 365 from your plan data
+
+            // Get today's date
+            $today = Carbon::now();
+
+            // Calculate the end date by adding the validity (365 days) to today's date
+            $endDate = $today->addDays($validity)->toDateString(); // This will return just the date in 'YYYY-MM-DD'
+             
+            //assign plan to the Users
+            $subdvibet = DB::table('subscribers')->insert([
+                'plan_name' => $planName,
+                'plan_end_date' =>$endDate,
+                'user_id' => $appUser->id,
+                'subscription_id' =>$plan->id,
+                'plan_category' =>$plan->plan_category,
+                'configuration_type' =>$plan->configuration_type,
+                'allowed_material' =>$plan->allowed_material,
+                'created_at' => Carbon::now(),
+                'auto_renew' => 0,
+                'status' => 1
+            ]);
+        } else {
+            // do nothing as of now
+            
+        }
 
         Flash::success('App User saved successfully.');
 
@@ -92,14 +190,20 @@ class app_userController extends AppBaseController
     public function edit($id)
     {
         $appUser = $this->appUserRepository->find($id);
-
+         // Retrieve all data from class_master
+         $classes = DB::table('class_master')->get();
+        
+         // Format data for select field
+         $classesData = $classes->pluck('class_name', 'id')->toArray(); 
+         $subscriptions = Subscription_plan::select('id','name', 'price', 'plan_category', 'validity')->get();
+ 
         if (empty($appUser)) {
             Flash::error('App User not found');
 
             return redirect(route('appUsers.index'));
         }
 
-        return view('app_users.edit')->with('appUser', $appUser);
+        return view('app_users.edit')->with(['appUser'=> $appUser, 'classesData' =>$classesData, 'subscriptions' =>$subscriptions ] ) ;
     }
 
     /**
@@ -112,6 +216,73 @@ class app_userController extends AppBaseController
      */
     public function update($id, Request $request)
     {
+        $adminuser = app_user::where('id', $id)->first();
+
+        $validator = Validator::make($request->all(), [
+            'user_type' => 'required',
+            'name' => 'required|string|between:3,255',
+            
+            'email' => [
+                'required',
+                'email:rfc,dns',
+                function ($attribute, $value, $fail) use ($id, $adminuser) {
+                    // Check email uniqueness in `u_logins`
+                    $existsInUlogins = DB::table('u_logins')
+                        ->where('email', $value)
+                        ->where('id', '!=', $id) // Exclude current user by ID
+                        ->exists();
+
+                    if ($existsInUlogins) {
+                        $fail('The email has already been taken in user logins.');
+                    }
+
+                    // If admin user is found, also check in `admlogin`
+                    if ($adminuser) {
+                        $existsInAdmlogin = DB::table('admlogin')
+                            ->where('email', $value)
+                            ->where('id', '!=', $adminuser->id) // Exclude current admin user by ID
+                            ->exists();
+
+                        if ($existsInAdmlogin) {
+                            $fail('The email has already been taken in admin logins.');
+                        }
+                    }
+                },
+            ],
+
+            'mobile' => [
+                'required',
+                'numeric',
+                'digits:10',
+                function ($attribute, $value, $fail) use ($id) {
+                    // Check mobile uniqueness, ignoring the current user's ID
+                    $existsInUlogins = DB::table('u_logins')
+                        ->where('mobile', $value)
+                        ->where('id', '!=', $id) // Exclude current user by ID
+                        ->exists();
+
+                    if ($existsInUlogins) {
+                        $fail('The mobile number has already been taken.');
+                    }
+                },
+            ],
+
+            'birthday' => 'required|date',
+            'gender' => 'required|in:Male,Female,Others',
+            'preferred_segment' => 'required|in:K12/School,Higher Education',
+            'class' => 'required_if:preferred_segment,K12/School|nullable|numeric|exists:class_master,id',
+            'personal_address' => 'required|string',
+            'institute_address' => 'required|string',
+        ]);
+
+        // Check if validation fails
+        if ($validator->fails()) {
+            // Return with errors
+            return Redirect::back()
+                ->withErrors($validator)
+                ->withInput();
+        }
+
         $appUser = $this->appUserRepository->find($id);
 
         if (empty($appUser)) {
@@ -119,10 +290,72 @@ class app_userController extends AppBaseController
 
             return redirect(route('appUsers.index'));
         }
+         //* updating Password
+        // Update the user with hashed password
+        $input = $request->except('password'); // Get all input except password
 
-        $appUser = $this->appUserRepository->update($request->all(), $id);
-        DB::table('teacherdetail')->where('email',$request->user_email)->update(['email' => $request->email, 'mobile_no' => $request->mobile, 'teacher_name' => $request->name]);
-        DB::table('admlogin')->where('email',$request->user_email)->update(['email' => $request->email, 'name' => $request->name]);
+        // Check if password exists and is not empty in the request
+        $input = $request->all(); // Get all request inputs
+
+        if ($request->filled('password')) {
+            // Hash the password and add it to the $input array if it's present
+            $input['password'] = Hash::make(trim($request->input('password')));
+        } else {
+            // Do nothing if the password field is not present or empty
+            // This allows you to proceed without changing the password
+        }
+        $appUser = $this->appUserRepository->update($input, $id);
+        // DB::table('teacherdetail')->where('email',$request->user_email)->update(['email' => $request->email, 'mobile_no' => $request->mobile, 'teacher_name' => $request->name]);
+        // DB::table('admlogin')->where('email',$request->user_email)->update(['email' => $request->email, 'name' => $request->name]);
+
+        // Access subscription plan details
+        $planId = $request->subscription_plan;
+        //* Getting Plan Info
+        $plan = Subscription_plan::find($planId)->first();   
+        
+        if ($plan) {
+            // Plan details
+            $planName = $plan->name;
+            $planPrice = $plan->price;
+            $planDescription = $plan->description;
+            $planValidity = $plan->validity; // 365 days from the plan
+
+            // Get today's date and calculate end date
+            $today = Carbon::now();
+            $endDate = $today->addDays($planValidity)->toDateString(); // 'YYYY-MM-DD'
+
+            // Check if subscription already exists for the user
+            $subscription = DB::table('subscribers')
+                ->where('user_id', $appUser->id)
+                ->where('subscription_id', $plan->id)
+                ->first();
+            if ($subscription) {
+                // If subscription exists, update it
+                DB::table('subscribers')
+                    ->where('user_id', $appUser->id)
+                    ->where('subscription_id', $plan->id)
+                    ->update([
+                        'plan_name' => 'testuser',
+                        'plan_end_date' => $endDate,
+                        'plan_category' => $plan->plan_category,
+                        'configuration_type' => $plan->configuration_type,
+                        'allowed_material' => $plan->allowed_material,
+                        'updated_at' => Carbon::now(),
+                    ]);
+            } else {
+                // If subscription doesn't exist, create a new one
+                DB::table('subscribers')->insert([
+                    'plan_name' => $planName,
+                    'plan_end_date' => $endDate,
+                    'user_id' => $appUser->id,
+                    'subscription_id' => $plan->id,
+                    'plan_category' => $plan->plan_category,
+                    'configuration_type' => $plan->configuration_type,
+                    'allowed_material' => $plan->allowed_material,
+                    'created_at' => Carbon::now(),
+                ]);
+            }
+        }
 
         Flash::success('App User updated successfully.');
 

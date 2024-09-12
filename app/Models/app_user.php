@@ -31,7 +31,17 @@ class app_user extends Model
         'email',
         'password',
         'mobile',
-        'type'
+        'type',
+        'user_type',  
+        'password', 
+        'birthday', 
+        'gender', 
+        'preferred_segment', 
+        'class',  
+        'is_active', 
+        'personal_address', 
+        'institute_address',
+        'parent_user'
     ];
 
     public $hidden = [
