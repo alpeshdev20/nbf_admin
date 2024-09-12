@@ -1,9 +1,15 @@
 @extends('layouts.app')
 
 @section('content')
+    <style>
+        .error {
+            color: red;
+            /* background-color: #acf; */
+        }
+    </style>
     <section class="content-header">
         <h1>
-            App User
+            App User 
         </h1>
     </section>
     <div class="content">
