@@ -67,7 +67,8 @@ class app_userDataTable extends DataTable
             'name',
             'email',
             'mobile',
-            'created_at'
+            'created_at',
+            'type',
         ];
     }
 

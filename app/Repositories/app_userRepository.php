@@ -17,10 +17,20 @@ class app_userRepository extends BaseRepository
      * @var array
      */
     protected $fieldSearchable = [
-        'name',
+       'name',
         'email',
         'password',
-        'mobile'
+        'mobile',
+        'type',
+        'user_type',  
+        'password', 
+        'birthday', 
+        'gender', 
+        'preferred_segment', 
+        'class',  
+        'is_active', 
+        'personal_address', 
+        'institute_address'
     ];
 
     /**
