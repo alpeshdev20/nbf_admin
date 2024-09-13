@@ -290,19 +290,17 @@ class app_userController extends AppBaseController
 
             return redirect(route('appUsers.index'));
         }
-         //* updating Password
-        // Update the user with hashed password
-        $input = $request->except('password'); // Get all input except password
-
-        // Check if password exists and is not empty in the request
+        
         $input = $request->all(); // Get all request inputs
-
+        //* updating Password
+        // Initialize input array with request data
+        $input = $request->except('password'); // Get all input except password
+        // Check if password exists and is not empty in the request
         if ($request->filled('password')) {
             // Hash the password and add it to the $input array if it's present
             $input['password'] = Hash::make(trim($request->input('password')));
         } else {
             // Do nothing if the password field is not present or empty
-            // This allows you to proceed without changing the password
         }
         $appUser = $this->appUserRepository->update($input, $id);
         // DB::table('teacherdetail')->where('email',$request->user_email)->update(['email' => $request->email, 'mobile_no' => $request->mobile, 'teacher_name' => $request->name]);
