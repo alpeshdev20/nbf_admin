@@ -42,7 +42,6 @@ class HomeController extends Controller
                 foreach($publishers as $pub) {
                     $publisher[] = $pub->id;
                 }
-                // dd($publishers);
             $Publisherbooks=\App\Models\app_material::whereIn('publisher_id',$publisher)->get();
             $Publisherbookscount=\App\Models\app_material::whereIn('publisher_id',$publisher)->count();
             $user_statistic_det=array();
@@ -53,17 +52,16 @@ class HomeController extends Controller
                     // Fetch data where created_at or updated_at falls within the date range
                     $data = \App\Models\app_book_analytic::where('book_id', $book->id)
                         ->where(function ($query) use ($input) {
-                            $query->whereDate('created_at', '>', $input['from_date'])
-                                  ->whereDate('created_at', '<', $input['to_date']);
+                            $query->whereDate('created_at', '>=', $input['from_date'])
+                                ->whereDate('created_at', '<=', $input['to_date']);
                         })
                         ->with(['user', 'user.subscriber', 'user.subscriber.subscription', 'book'])
                         ->get();
-                    
                     // Count data where created_at or updated_at falls within the date range
                     $data_c = \App\Models\app_book_analytic::where('book_id', $book->id)
                         ->where(function ($query) use ($input) {
-                            $query->whereDate('created_at', '>', $input['from_date'])
-                                  ->whereDate('created_at', '<', $input['to_date']);
+                            $query->whereDate('created_at', '>=', $input['from_date'])
+                                  ->whereDate('created_at', '<=', $input['to_date']);
                         })
                         ->count();
                 } else {
@@ -77,7 +75,7 @@ class HomeController extends Controller
                         ->with(['user', 'user.subscriber', 'user.subscriber.subscription', 'book'])
                         ->count();
                 }
-                
+                // dd($data);
                 if($data_c>0){
                     $data_count+=$data_c;
                         $user_statistic_det[]=$data;
@@ -98,8 +96,8 @@ class HomeController extends Controller
                     // Fetch data with both created_at and updated_at date range filters
                     $data = \App\Models\app_book_analytic::where('book_id', $book->id)
                         ->where(function ($query) use ($input) {
-                            $query->whereDate('created_at', '>', $input['from_date'])
-                                  ->whereDate('created_at', '<', $input['to_date']);
+                            $query->whereDate('created_at', '>=', $input['from_date'])
+                                  ->whereDate('created_at', '<=', $input['to_date']);
                         })
                         ->with(['user', 'user.subscriber', 'user.subscriber.subscription', 'book'])
                         ->get();
