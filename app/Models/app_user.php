@@ -41,7 +41,10 @@ class app_user extends Model
         'is_active', 
         'personal_address', 
         'institute_address',
-        'parent_user'
+        'parent_user',
+        'registration_type',
+        'registration_token',
+        'city',
     ];
 
     public $hidden = [

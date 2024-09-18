@@ -7,11 +7,16 @@
 <div class="form-group col-sm-6" style="margin-top:10px;">
     {!! Form::label('user_type', 'User Type:') !!}
     <div>
-        {!! Form::radio('user_type', 'Individual User', false, ['id' => 'individual_user', 'required' => 'required']) !!} Individual User
-        {!! Form::radio('user_type', 'Institutional User', false, ['id' => 'institutional_user', 'required' => 'required']) !!} Institutional User
+        {!! Form::radio('registration_type', '0', false, ['id' => 'individual_user', 'required' => 'required']) !!} Individual User
+        {!! Form::radio('registration_type', '3', false, ['id' => 'institutional_user', 'required' => 'required']) !!} Institutional User
     </div>
 </div>
 
+<!-- Enrollment Number -->
+<div class="form-group col-sm-6">
+    {!! Form::label('Enrollment Number', 'Enrollment Number') !!}
+    {!! Form::text('registration_token', null, ['class' => 'form-control']) !!}
+</div>
 
 <!-- Name Field -->
 <div class="form-group col-sm-6">
@@ -56,7 +61,7 @@
 </div>
 
 <!-- Preferred Segment Field -->
-<div class="form-group col-sm-6" style="margin-top:20px;">
+<div class="form-group col-sm-6" >
     {!! Form::label('preferred_segment', 'Preferred Segment:*') !!}
     <div>
         {!! Form::radio('preferred_segment', 'K12/School', false, ['id' => 'k12_school', 'required' => 'required']) !!} K12/School
@@ -65,7 +70,7 @@
 </div>
 
 <!-- Class Field -->
-<div class="form-group col-sm-12">
+<div class="form-group col-sm-6">
     {!! Form::label('class', 'Class:*') !!}
     {!! Form::select('class', $classesData, null, ['class' => 'form-control', 'placeholder' => 'Select Class']) !!}
 </div>
@@ -76,8 +81,8 @@
     <select name="subscription_plan" class="form-control" required>
         <option value="">-- Select Plan --</option>
         @foreach($subscriptions as $plan)
-            <option value="{{ $plan->id }}">
-                {{ $plan->name }} - price {{ $plan->price }}  - 
+            <option value="{{ $plan->id }}" {{ (isset($user_subscription) && $plan->id == $user_subscription) ? 'selected' : '' }}>
+                {{ $plan->name }} - price {{ $plan->price }} - 
                 {{ $plan->plan_category == 1 ? 'Basic Plan' : 'Premium Plan' }} - 
                 Validity {{ $plan->validity }} days
             </option>
@@ -86,7 +91,7 @@
 </div>
 
 <!-- User Active Field -->
-<div class="form-group col-sm-6" style="margin-top:20px;">
+<div class="form-group col-sm-6" style="margin-top: 14px;">
     {!! Form::label('is_active', 'Is Active:') !!}
     <div>
         {!! Form::radio('is_active', '1', true, ['id' => 'active_yes']) !!} Active
@@ -94,9 +99,14 @@
     </div>
 </div>
 
+<!-- Enrollment Number -->
+<div class="form-group col-sm-12">
+    {!! Form::label('City', 'City') !!}
+    {!! Form::text('city', null, ['class' => 'form-control' ,'placeholder' => 'City']) !!}
+</div>
 
 <!-- Personal Address Field -->
-<div class="form-group col-sm-6">
+<div class="form-group col-sm-6 ">
     {!! Form::label('personal_address', 'Personal Address:') !!}
     {!! Form::textarea('personal_address', null, ['class' => 'form-control' ,'required' => 'required']) !!}
 </div>

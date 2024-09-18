@@ -72,7 +72,6 @@ class app_userController extends AppBaseController
     public function store(Createapp_userRequest $request)
     {  
         $validator = Validator::make($request->all(),[
-            'user_type' => 'required',
             'name' => 'required|string|between:3,255',
             'email' => [
                 'required',
@@ -94,12 +93,12 @@ class app_userController extends AppBaseController
             'class' => 'required_if:preferred_segment,K12/School|nullable|numeric|exists:class_master,id',
             'personal_address' => 'required|string',
             'institute_address' => 'required|string',
-            // Uncomment if needed
-            // 'registration_type' => 'required|in:0,3',
-            // 'registration_token' => 'required_if:registration_type,3',
+            'registration_type' => 'required|in:0,3',
+            'registration_token' => 'required_if:registration_type,3',
         ], [
-            "registration_token.required_if" => "Registration token is required",
-            'registration_type.in' => 'User Type is either Individual User or Institutional User',
+            'registration_type.required' => 'User type is required.',
+            'registration_type.in' => 'Please select a valid user type.',
+            'registration_token.required_if' => 'Enrollment number is required when the user type is selected as Institutional.',
         ]);
 
         // Check if validation fails
@@ -120,8 +119,7 @@ class app_userController extends AppBaseController
         // $userId = 1000;
         $planId = $request->subscription_plan;
         //* Getting Plan Info
-        $plan = Subscription_plan::find($planId)->first();    
-        
+        $plan = Subscription_plan::where('id' ,$planId)->first();    
         //* Activating User Free Plan
         if ($plan) {
             $planName = $plan->name;
@@ -193,6 +191,13 @@ class app_userController extends AppBaseController
          // Retrieve all data from class_master
          $classes = DB::table('class_master')->get();
         
+         //get user active subscription 
+         $subscription = DB::table('subscribers')
+         ->where('user_id', $appUser->id)
+         ->where('status', 1)
+         ->first();
+        //  dd($subscription);
+         $user_subscription = $subscription ? $subscription->subscription_id : null;
          // Format data for select field
          $classesData = $classes->pluck('class_name', 'id')->toArray(); 
          $subscriptions = Subscription_plan::select('id','name', 'price', 'plan_category', 'validity')->get();
@@ -203,7 +208,7 @@ class app_userController extends AppBaseController
             return redirect(route('appUsers.index'));
         }
 
-        return view('app_users.edit')->with(['appUser'=> $appUser, 'classesData' =>$classesData, 'subscriptions' =>$subscriptions ] ) ;
+        return view('app_users.edit')->with(['appUser'=> $appUser, 'classesData' =>$classesData, 'subscriptions' =>$subscriptions ,'user_subscription' =>$user_subscription] ) ;
     }
 
     /**
@@ -219,7 +224,6 @@ class app_userController extends AppBaseController
         $adminuser = app_user::where('id', $id)->first();
 
         $validator = Validator::make($request->all(), [
-            'user_type' => 'required',
             'name' => 'required|string|between:3,255',
             
             'email' => [
@@ -273,6 +277,13 @@ class app_userController extends AppBaseController
             'class' => 'required_if:preferred_segment,K12/School|nullable|numeric|exists:class_master,id',
             'personal_address' => 'required|string',
             'institute_address' => 'required|string',
+            'registration_type' => 'required|in:0,3',
+            'registration_token' => 'required_if:registration_type,3',
+        ],
+        [
+            'registration_type.required' => 'User type is required.',
+            'registration_type.in' => 'Please select a valid user type.',
+            'registration_token.required_if' => 'Enrollment number is required when the user type is selected as Institutional.',
         ]);
 
         // Check if validation fails
@@ -309,8 +320,7 @@ class app_userController extends AppBaseController
         // Access subscription plan details
         $planId = $request->subscription_plan;
         //* Getting Plan Info
-        $plan = Subscription_plan::find($planId)->first();   
-        
+        $plan = Subscription_plan::where('id' ,$planId)->first();   
         if ($plan) {
             // Plan details
             $planName = $plan->name;
@@ -326,9 +336,9 @@ class app_userController extends AppBaseController
             $subscription = DB::table('subscribers')
                 ->where('user_id', $appUser->id)
                 ->where('subscription_id', $plan->id)
-                ->first();
+                ->where('status', 1)
+                ->first();    
             if ($subscription) {
-                // If subscription exists, update it
                 DB::table('subscribers')
                     ->where('user_id', $appUser->id)
                     ->where('subscription_id', $plan->id)
@@ -339,8 +349,20 @@ class app_userController extends AppBaseController
                         'configuration_type' => $plan->configuration_type,
                         'allowed_material' => $plan->allowed_material,
                         'updated_at' => Carbon::now(),
+                        'status' =>1,
                     ]);
             } else {
+                //deactive all others subscription
+                $subscription_all = DB::table('subscribers')
+                ->where('user_id', $appUser->id)
+                ->get();
+                //deactive all others subscription
+                if ($subscription_all->isNotEmpty()) {
+                    DB::table('subscribers')
+                        ->where('user_id', $appUser->id)
+                        ->update(['status' => 0]);
+                }
+
                 // If subscription doesn't exist, create a new one
                 DB::table('subscribers')->insert([
                     'plan_name' => $planName,

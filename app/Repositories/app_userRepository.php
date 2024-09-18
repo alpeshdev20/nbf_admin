@@ -30,7 +30,10 @@ class app_userRepository extends BaseRepository
         'class',  
         'is_active', 
         'personal_address', 
-        'institute_address'
+        'institute_address',
+        'registration_type',
+        'registration_token',
+        'city',
     ];
 
     /**
