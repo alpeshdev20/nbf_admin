@@ -135,7 +135,17 @@ $countries = [];
      * @return Response
      */
 	public function store(Createapp_materialRequest $request)
-    { 
+    {   
+
+          // Define validation rules
+        $rules_validate = [
+            'episodes.*.title' => 'nullable|string|max:200', // Optional, validates if provided
+            'episodes.*.summary' => 'nullable|string|max:240', // Optional, validates if provided
+            'episodes.*.length' => 'nullable|string|max:100', // Optional, validates if provided
+        ];
+
+        // Validate the request
+        $validatedData = $request->validate($rules_validate);
         if(Auth::user()->access->access_role == 3) {
             $validator = Validator::make($request->all(),[
                 'book_pdf' => 'required|mimetypes:pdf'
@@ -445,6 +455,16 @@ $countries = [];
      */
     public function update($id, Updateapp_materialRequest $request)
     {   
+          // Define validation rules
+          $rules_validate = [
+            'episodes.*.title' => 'nullable|string|max:200', // Optional, validates if provided
+            'episodes.*.summary' => 'nullable|string|max:240', // Optional, validates if provided
+            'episodes.*.length' => 'nullable|string|max:100', // Optional, validates if provided
+        ];
+
+        // Validate the request
+        $validatedData = $request->validate($rules_validate);
+
         $rules = [
             'episodes.*.file' => 'mimetypes:' . $this->getAllowedMimeTypes($request->material_type),
         ];
