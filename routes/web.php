@@ -25,15 +25,15 @@ Route::get('/', function () {
     return redirect('/login');
 });
 
-Route::get('/mido', function () {
-	$res=array();
-	for($i=1;$i<=5;$i++){
-		$res['nbf'.$i.'@2022'] = Hash::make('nbf'.$i.'@2022');
-	}
-	$res['nbfuser@2022'] = Hash::make('nbfuser@2022');
+// Route::get('/mido', function () {
+// 	$res=array();
+// 	for($i=1;$i<=5;$i++){
+// 		$res['nbf'.$i.'@2022'] = Hash::make('nbf'.$i.'@2022');
+// 	}
+// 	$res['nbfuser@2022'] = Hash::make('nbfuser@2022');
 	
-    dd($res);
-});
+//     dd($res);
+// });
 
 
 
@@ -215,4 +215,6 @@ Route::prefix('csv')->group(function () {
 	Route::get('book', 'materialController@downloadBookSample');
 });
 
+//generate unique slug
+Route::post('/generate-slug', 'app_materialController@generateSlug')->name('generate.slug');
 

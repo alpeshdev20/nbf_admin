@@ -98,7 +98,8 @@ class app_materialDataTable extends DataTable
             'publisher' => ['data' => 'bookpublisher.publisher', 'name' => 'bookpublisher.publisher'],
             'author' => ['data' => 'author', 'name' => 'author'],
             'year' => ['data' => 'year', 'name' => 'year'],
-            'isbn_code' => ['data' => 'tags', 'name' => 'tags']
+            'isbn_code' => ['data' => 'tags', 'name' => 'tags'],
+            'slug',
         ];
     }
 

@@ -142,6 +142,7 @@ $countries = [];
             'episodes.*.title' => 'nullable|string|max:200', // Optional, validates if provided
             'episodes.*.summary' => 'nullable|string|max:240', // Optional, validates if provided
             'episodes.*.length' => 'nullable|string|max:100', // Optional, validates if provided
+            'slug' => 'required|string|unique:books,slug',
         ];
 
         // Validate the request
@@ -156,11 +157,25 @@ $countries = [];
                 'episodes.*.file' => 'mimetypes:' . $this->getAllowedMimeTypes($request->material_type)
             ]);
         }
+
         if ($validator->fails()) {
             return redirect()->back()
                 ->withErrors($validator)
                 ->withInput($request->all());
         }
+
+
+        // // Generate a slug from the book name
+        // $slug = Str::slug($request->book_name);
+
+        // // Ensure the slug is unique
+        // $baseSlug = $slug;
+        // $count = 1;
+        // while (app_material::where('slug', $slug)->exists()) {
+        //     $slug = $baseSlug . '-' . $count;
+        //     $count++;
+        // }
+        // dd($slug);
 
         if(Auth::user()->access->access_role == 3) {
             $input = $request->all();
@@ -460,6 +475,8 @@ $countries = [];
             'episodes.*.title' => 'nullable|string|max:200', // Optional, validates if provided
             'episodes.*.summary' => 'nullable|string|max:240', // Optional, validates if provided
             'episodes.*.length' => 'nullable|string|max:100', // Optional, validates if provided
+            'slug' => 'required|string|unique:books,slug,' . $id, // Ignore the current book's slug
+
         ];
 
         // Validate the request
@@ -664,4 +681,32 @@ $countries = [];
     {
         return Region::where('region_name', 'like', '%'.$request->q.'%')->select('id', 'region_name')->get();
     }
+
+    //generate unique slug
+    public function generateSlug(Request $request)
+    {
+        $title = $request->input('title');
+        $existingSlug = $request->input('existing_slug');
+    
+        // Generate the initial slug
+         $slug = Str::slug($title);
+
+    
+        // If in edit mode and the slug hasn't changed
+        if ($existingSlug && $existingSlug === $slug) {
+            return response()->json(['slug' => $slug]);
+        }
+    
+        // Check for uniqueness and modify if necessary
+        $originalSlug = $slug;
+        $count = 1;
+    
+        while (app_material::where('slug', $slug)->exists()) {
+            $slug = $originalSlug . '-' . $count;
+            $count++;
+        }
+    
+        return response()->json(['slug' => $slug]);
+    }
+    
 }
