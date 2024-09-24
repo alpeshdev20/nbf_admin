@@ -99,7 +99,8 @@ class app_material extends Model
         'allow_region',
         'table_of_content',
         'author_detail',
-        'content'
+        'content',
+        'slug',
     ];
 
     /**

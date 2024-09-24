@@ -20,6 +20,15 @@ else { ?>
     {!! Form::text('book_name', null, ['class' => 'form-control']) !!}
 </div>
 
+<!-- Add a hidden field to indicate mode -->
+{!! Form::hidden('is_edit', isset($appMaterial) ? 'true' : 'false') !!}
+<!-- Slug Field -->
+<div class="form-group col-sm-12">
+    {!! Form::label('slug', 'Slug:') !!}
+    {!! Form::text('slug', null, ['class' => 'form-control', 'readonly' => 'readonly', 'id' => 'slug']) !!}
+    <small id="slug-status" class="form-text text-muted"></small>
+</div>
+
 <!-- Book Image Field 'image/jpeg', 'image/jpg', 'image/png',-->
 <div class="form-group col-sm-6">
 	<div class="col-sm-6"> 
@@ -356,7 +365,37 @@ else { ?>
 		});
 
 		// $('#genre_id0').selectpicker('refresh');
+		const isEdit = $('input[name="is_edit"]').val() === 'true';
+        const existingSlug = $('#slug').val(); // Get the existing slug
 
+        $('#book_name').on('input', function() {
+            let title = $(this).val();
+
+            // Skip AJAX call in edit mode if the slug is unchanged
+            if (isEdit && title === "") {
+                $('#slug').val(''); // Clear slug if title is cleared
+                $('#slug-status').text('');
+                return;
+            }
+
+            // AJAX request to generate a unique slug
+            $.ajax({
+                url: '/generate-slug',
+                method: 'POST',
+                data: {
+                    title: title,
+                    existing_slug: isEdit ? existingSlug : null, // Send existing slug if in edit mode
+                    _token: '{{ csrf_token() }}'
+                },
+                success: function(response) {
+                    $('#slug').val(response.slug);
+                    $('#slug-status').text('Slug generated: ' + response.slug).css('color', 'green');
+                },
+                error: function() {
+                    $('#slug-status').text('Error generating slug.').css('color', 'red');
+                }
+            });
+        });
 	
 	});
 

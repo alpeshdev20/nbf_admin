@@ -18,7 +18,14 @@ else { ?>
 <!-- Book Name Field -->
 <div class="form-group col-sm-6">
     {!! Form::label('book_name', 'Title:') !!}
-    {!! Form::text('book_name', null, ['class' => 'form-control']) !!}
+    {!! Form::text('book_name', null, ['class' => 'form-control', 'id' => 'book_name']) !!}
+</div>
+
+<!-- Slug Field -->
+<div class="form-group col-sm-12">
+    {!! Form::label('slug', 'Slug:') !!}
+    {!! Form::text('slug', null, ['class' => 'form-control', 'readonly' => 'readonly', 'id' => 'slug']) !!}
+    <small id="slug-status" class="form-text text-muted"></small>
 </div>
 
 <!-- Book Image Field 'image/jpeg', 'image/jpg', 'image/png',-->
@@ -323,5 +330,26 @@ else { ?>
 	$("#dynamicAddRemove").on('click', '.remove-field', function() {
 	$(this).closest('.episode').remove();
 	});
+
+	$('#book_name').on('input', function() {
+            let title = $(this).val();
+
+            // AJAX request to generate a unique slug
+            $.ajax({
+                url: '/generate-slug', // Update this URL as needed
+                method: 'POST',
+                data: {
+                    title: title,
+                    _token: '{{ csrf_token() }}' // Include CSRF token
+                },
+                success: function(response) {
+                    $('#slug').val(response.slug); // Update slug field
+                    $('#slug-status').text('Slug generated: ' + response.slug).css('color', 'green');
+                },
+                error: function() {
+                    $('#slug-status').text('Error generating slug.').css('color', 'red');
+                }
+            });
+        });
 });
 </script>
