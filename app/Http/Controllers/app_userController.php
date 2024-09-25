@@ -87,7 +87,7 @@ class app_userController extends AppBaseController
             ],
             'mobile' => 'required|numeric|digits:10|unique:u_logins,mobile',
             'password' => 'required|string|min:8',
-            'birthday' => 'required|date',
+            // 'birthday' => 'required|date',
             'gender' => 'required|in:Male,Female,Others',
             'preferred_segment' => 'required|in:K12/School,Higher Education',
             'class' => 'required_if:preferred_segment,K12/School|nullable|numeric|exists:class_master,id',
@@ -222,7 +222,7 @@ class app_userController extends AppBaseController
     public function update($id, Request $request)
     {
         $adminuser = app_user::where('id', $id)->first();
-
+        
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|between:3,255',
             
@@ -244,7 +244,7 @@ class app_userController extends AppBaseController
                     if ($adminuser) {
                         $existsInAdmlogin = DB::table('admlogin')
                             ->where('email', $value)
-                            ->where('id', '!=', $adminuser->id) // Exclude current admin user by ID
+                            ->where('id', '!=', $adminuser->parent_user) // Exclude current admin user by ID
                             ->exists();
 
                         if ($existsInAdmlogin) {
@@ -271,7 +271,7 @@ class app_userController extends AppBaseController
                 },
             ],
 
-            'birthday' => 'required|date',
+            // 'birthday' => 'required|date',
             'gender' => 'required|in:Male,Female,Others',
             'preferred_segment' => 'required|in:K12/School,Higher Education',
             'class' => 'required_if:preferred_segment,K12/School|nullable|numeric|exists:class_master,id',
