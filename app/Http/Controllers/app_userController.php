@@ -343,7 +343,7 @@ class app_userController extends AppBaseController
                     ->where('user_id', $appUser->id)
                     ->where('subscription_id', $plan->id)
                     ->update([
-                        'plan_name' => 'testuser',
+                        'plan_name' =>$plan->name,
                         'plan_end_date' => $endDate,
                         'plan_category' => $plan->plan_category,
                         'configuration_type' => $plan->configuration_type,
