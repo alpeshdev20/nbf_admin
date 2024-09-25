@@ -51,7 +51,7 @@
 <!-- Birthday Field -->
 <div class="form-group col-sm-6">
     {!! Form::label('birthday', 'Birthday:') !!}
-    {!! Form::date('birthday', null, ['class' => 'form-control', 'id' => 'birthday', 'required' => 'required']) !!}
+    {!! Form::date('birthday', null, ['class' => 'form-control', 'id' => 'birthday']) !!}
 </div>
 
 <!-- Gender Field -->
