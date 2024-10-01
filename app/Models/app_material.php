@@ -101,6 +101,7 @@ class app_material extends Model
         'author_detail',
         'content',
         'slug',
+        'folder_name',
     ];
 
     /**

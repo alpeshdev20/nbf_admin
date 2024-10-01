@@ -3,30 +3,30 @@
 namespace App\Http\Controllers;
 
 use App\DataTables\app_materialDataTable;
+use App\Http\Controllers\AppBaseController;
 use App\Http\Requests;
 use App\Http\Requests\Createapp_materialRequest;
 use App\Http\Requests\Updateapp_materialRequest;
+use App\Imports\ImportAppMaterials;
+use App\Models\app_department;
+use App\Models\app_material;
+use App\Models\app_subject;
+use App\Models\appmaterial_item;
+use App\Models\book_genre_map;
+use App\Models\book_publisher;
+use App\Models\genre;
+use App\Models\language;
+use App\Models\material;
+use App\Models\Region;
 use App\Repositories\app_materialRepository;
 use Flash;
-use Illuminate\Support\Facades\Auth;
-use App\Models\genre;
-use App\Models\app_material;
-use App\Models\material;
-use App\Models\language;
-use App\Models\app_department;
-use App\Models\book_publisher;
-use App\Models\book_genre_map;
-use App\Models\app_subject;
-use App\Models\Region;
-use App\Models\appmaterial_item;
-use App\Http\Controllers\AppBaseController;
-use App\Imports\ImportAppMaterials;
 use Illuminate\Http\Request;
-use Illuminate\Support\Arr;
-use Maatwebsite\Excel\Facades\Excel;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
+use Maatwebsite\Excel\Facades\Excel;
 use Response;
+use ZipArchive;
 
 class app_materialController extends AppBaseController
 {
@@ -232,7 +232,76 @@ $countries = [];
         
         
         $file1->move(public_path('../../ebook/public/uploads'),$fileName);
-        $file2->move(public_path('../../ebook/public/uploads'),$fileName1);
+        if ($request->material_type == 6) {
+            // Define upload path and file name
+            $uploadPath = public_path('../../front/public/games');
+            $fileName1 = $request->file('book_pdf')->getClientOriginalName();
+        
+            // Move the uploaded file
+            $file2->move($uploadPath, $fileName1);
+        
+            // Define the full path to the uploaded ZIP file
+            $zipFilePath = $uploadPath . '/' . $fileName1;
+        
+            // Extract the ZIP file
+            $zip = new ZipArchive;
+            if ($zip->open($zipFilePath) === TRUE) {
+                // Define extraction path
+                $folderName = pathinfo($fileName1, PATHINFO_FILENAME); // Get folder name
+                $extractionPath = $uploadPath . '/' . $folderName;
+        
+                // Create extraction folder if it doesn't exist
+                if (!file_exists($extractionPath)) {
+                    mkdir($extractionPath, 0777, true);
+                    chmod($extractionPath, 0777); // Set permissions for the extraction folder
+                }
+        
+                // Extract the ZIP file
+                $zip->extractTo($extractionPath);
+                $zip->close();
+        
+                // Assign the folder name to $input['folder_name']
+                $input['folder_name'] = $folderName;
+        
+                // Set permissions for all files in the upload directory to 777
+                chmod($uploadPath . '/' . $fileName1, 0777); // Set permissions for the uploaded ZIP file
+        
+                // Move files up to the extraction path and delete any nested directories
+                $extractedFiles = scandir($extractionPath);
+                foreach ($extractedFiles as $file) {
+                    // Skip current and parent directory references
+                    if ($file !== '.' && $file !== '..') {
+                        // Check if it is a directory
+                        if (is_dir($extractionPath . '/' . $file)) {
+                            // Move files from the nested directory to the extraction path
+                            $nestedFiles = scandir($extractionPath . '/' . $file);
+                            foreach ($nestedFiles as $nestedFile) {
+                                if ($nestedFile !== '.' && $nestedFile !== '..') {
+                                    rename($extractionPath . '/' . $file . '/' . $nestedFile, $extractionPath . '/' . $nestedFile);
+                                    chmod($extractionPath . '/' . $nestedFile, 0777); // Set permissions for the moved file
+                                }
+                            }
+                            // Remove the now-empty nested directory
+                            rmdir($extractionPath . '/' . $file);
+                        } else {
+                            chmod($extractionPath . '/' . $file, 0777); // Set permissions for the extracted file
+                        }
+                    }
+                }
+        
+                // Delete the uploaded ZIP file after extraction
+                unlink($zipFilePath);
+            } else {
+                // Handle error if ZIP file can't be opened
+                return response()->json(['error' => 'Could not open the ZIP file.'], 400);
+            }
+        } else {
+            // Move the file to a different location if material_type is not 6
+            $file2->move(public_path('../../ebook/public/uploads'), $fileName1);
+        }
+        
+        
+        
         
         $fileindex=1;
         
@@ -313,6 +382,9 @@ $countries = [];
             case '5':
                 $allowedMimeTypes = ['application/pdf', 'application/epub+zip'];
                 break;
+            case '6':
+                $allowedMimeTypes = ['application/zip'];
+                break;    
     
         }
          return implode(',', $allowedMimeTypes);

@@ -37,6 +37,7 @@ class app_materialRepository extends BaseRepository
         'table_of_content',
         'author_detail',
         'slug',
+        'folder_name',
     ];
 
     /**
