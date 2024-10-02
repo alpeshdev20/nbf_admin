@@ -160,6 +160,10 @@
 <li class="{{ Request::is('user.data.overview*') ? 'active' : '' }}">
     <a href="{{ route('user.data.overview') }}"><i class="fa fa-edit"></i><span>User Data Overview</span></a>
 </li>
+
+<li class="{{ Request::is('ai.resources.index*') ? 'active' : '' }}">
+    <a href="{{ route('ai.integration.index') }}"><i class="fa fa-edit"></i><span>Ai Integration</span></a>
+</li>
 {{-- <li class="{{ Request::is('Subscriptions*') ? 'active' : '' }}">
     <a href="{{ route('subscriptions.index') }}"><i class="fa fa-edit"></i><span>Subscription Trnx</span></a>
 </li>--}}

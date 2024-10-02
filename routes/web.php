@@ -218,3 +218,7 @@ Route::prefix('csv')->group(function () {
 //generate unique slug
 Route::post('/generate-slug', 'app_materialController@generateSlug')->name('generate.slug');
 
+//Ai Integration Routes 
+Route::get('/ai-integration', 'app_materialController@ShowResourcesForAI')->name('ai.integration.index');
+Route::post('/ai-integration/update-ai-integration', 'app_materialController@toggleAIIntegration')->name('update-ai-integration');
+
