@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\DataTables\app_materialDataTable;
+use App\DataTables\app_material_ResourcesForAIDatatable;
+
 use App\Http\Controllers\AppBaseController;
 use App\Http\Requests;
 use App\Http\Requests\Createapp_materialRequest;
@@ -780,5 +782,36 @@ $countries = [];
     
         return response()->json(['slug' => $slug]);
     }
+
+    
+    /**
+     * Display a listing of the Show Resources For AI.
+     *
+     * @param app_materialDataTable $appMaterialDataTable
+     * @return Response
+     */
+    public function ShowResourcesForAI(app_material_ResourcesForAIDatatable $app_material_ResourcesForAIDatatable)
+    {
+        return $app_material_ResourcesForAIDatatable->render('app_materials.ShowResourcesForAi');
+    }
+
+    //Change ai integration  status of record
+    public function toggleAIIntegration(Request $request)
+    {
+        $ids = $request->input('ids');
+
+        foreach ($ids as $id) {
+            $material = app_material::find($id);
+            // dd($material);
+            if ($material) {
+                // Toggle the ai_integration value
+                $material->ai_integration = ($material->ai_integration === 'yes') ? 'no' : 'yes';
+                $material->save();
+            }
+        }
+
+        return response()->json(['success' => true]);
+    }
+
     
 }
