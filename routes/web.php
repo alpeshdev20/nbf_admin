@@ -222,3 +222,9 @@ Route::post('/generate-slug', 'app_materialController@generateSlug')->name('gene
 Route::get('/ai-integration', 'app_materialController@ShowResourcesForAI')->name('ai.integration.index');
 Route::post('/ai-integration/update-ai-integration', 'app_materialController@toggleAIIntegration')->name('update-ai-integration');
 
+//blogs
+Route::resource('blogs', 'BlogController');
+//generate unique slug for blogs
+Route::post('/generate-slug', 'BlogController@generateSlug')->name('blog.generate.slug');
+
+
