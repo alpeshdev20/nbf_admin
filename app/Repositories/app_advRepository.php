@@ -19,7 +19,8 @@ class app_advRepository extends BaseRepository
     protected $fieldSearchable = [
         'image',
         'material',
-        'active'
+        'active',
+        'link',
     ];
 
     /**

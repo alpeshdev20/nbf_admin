@@ -1,8 +1,9 @@
 <?php
 
 namespace App\Models;
-
 use Eloquent as Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
 
 /**
  * Class app_adv
@@ -15,6 +16,7 @@ use Eloquent as Model;
  */
 class app_adv extends Model
 {
+    use SoftDeletes;
 
     public $table = 'app_ads';
     
@@ -28,7 +30,8 @@ class app_adv extends Model
     public $fillable = [
         'image',
         'material',
-        'active'
+        'active',
+        'link',
     ];
 
     /**
@@ -51,8 +54,10 @@ class app_adv extends Model
     public static $rules = [
         'image' => 'required',
         'material' => 'required',
-        'active' => 'required'
+        'active' => 'required',
+        'link' => 'required|url', 
     ];
 
+    protected $dates = ['deleted_at']; 
     
 }
