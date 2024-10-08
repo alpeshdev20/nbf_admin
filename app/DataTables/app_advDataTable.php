@@ -70,7 +70,8 @@ class app_advDataTable extends DataTable
         return [
             'image' => ['data' => 'image', 'name' => 'image', 'render'=>'"<a target=_blank href=' .$base . '" + encodeURIComponent(data) + ">" + data.substring(0,24) + "</a>"'],
             'material' => ['data' => 'material_type', 'name' => 'app_material_type.material_type'],
-            'active' => ['data' => 'active', 'name' => 'active', 'render'=>'data == 1 ? "Active" : "Inactive"']
+            'active' => ['data' => 'active', 'name' => 'active', 'render'=>'data == 1 ? "Active" : "Inactive"'],
+            'link',
         ];
     }
 
