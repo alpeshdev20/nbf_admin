@@ -87,7 +87,7 @@
 	        <td id="book_name"><p>{{ $bookname }}</p></td>
             
             <td id="total_read_time"><p>{{ floor($total_read/60)}}</p></td>
-            <td id="user_count"><p>@include('Box.usersinfo'){{ $usercount }}</p></td>
+            <td id="user_count"><p>@include('Box.usersinfo') {{ $usercount }}</p></td>
 
         </tr>
         @endforeach
