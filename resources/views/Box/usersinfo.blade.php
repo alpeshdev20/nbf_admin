@@ -59,33 +59,71 @@
                             ?>
                             <tr id="status_row">                    
                                 <td id="sn"><p>{{ ++$sn }}</p></td>
-                                <td id="user_type"><p>
-                                @if (empty($det['user']['subscriber']))
-                                {{__('E')}}
-                                @endif
-                                @if (!empty($det['user']['subscriber']))
-                                {{__('N')}}
-                                @endif</p></td>
+                                <td id="user_type">
+                                    <p>
+                                        @if (empty($data->subscriber))
+                                            <!-- Link for Existing User -->
+                                        <a href="#" data-id="{{ $det->id }}" class="btn user-modal-trigger-1" data-toggle="modal" data-target="#userModal{{ $det->id }}">
+                                                {{ __('E') }}
+                                            </a>
+                                        @else
+                                            <!-- Link for New User -->
+                                            <a href="#" data-id="{{ $det->id }}" class="btn user-modal-trigger-1"data-toggle="modal" data-target="#userModal{{ $det->id }}">
+                                                {{ __('N') }}
+                                            </a>
+                                        @endif
+                                    </p>
+                                </td>
                                 <td id="location"><p>@if (empty($det['location']))
                                 {{__('----')}}
                                 @else
                                 {{$det['location']}}
                                 @endif
                                 </p></td>
-                                <td id="subscription_type"><p>
-                                @if (!empty($det['user']['subscriber']))
-                                    {{__('NA')}}
-                                @endif
-                                @if (!empty($det['user']['subscriber']) && $det['user']['subscriber']['subscription']['price'] >= 199)
-                                    {{__('P')}}
-                                @endif
-                                @if (!empty($det['user']['subscriber']) && $det['user']['subscriber']['subscription']['price'] < 199)
-                                    {{__('T')}}
-                                @endif</p></td>
+                                <td id="subscription_type">
+                                    <p>
+                                        @if (empty($data->subscriber))
+                                            {{ __('NA') }}
+                                        @elseif (!empty($data->subscriber->plan_name) && $data->subscriber->plan_name === 'FREE')
+                                            {{ __('Trial') }}
+                                        @elseif ((!empty($data->subscriber->plan_name) && $data->subscriber->plan_name != 'FREE'))
+                                                {{ __('Paid') }}
+                                        @else
+                                            {{ __('NA') }} <!-- Optional: For cases where subscription price is not available -->
+                                        @endif
+                                    </p>
+                                   </td>
                                 <td id="total_time_spent"><p>{{floor($overall_read_time/60)}}</p></td>
                                 <td id="time_spent_per_book"><p>{{floor($total_time_span/60)}}</p></td>
                     
                             </tr>
+                            @endphp 
+                            <div class="modal fade" id="userModal{{ $rec->id }}" tabindex="-1" role="dialog" aria-labelledby="userModalLabel{{ $rec->id }}" aria-hidden="true">
+                                <div class="modal-dialog" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="userModalLabel{{ $rec->id }}">User Details</h5>
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <p>User Name: {{ $rec->name }}</p>
+                                            <p>User Email: {{ $rec->email }}</p>
+                                            <p>User Mobile: {{ $rec->mobile }}</p>
+                                            <p>Plan Name: {{ $rec->subscriber->plan_name ?? 'Not Available' }}</p>
+                                            <p>User Gender: {{ $rec->gender }}</p>
+                                            <p>User Personal Address: {{ $rec->personal_address }}</p>
+                                            <p>User Institute Address: {{ $rec->institute_address }}</p>
+                                            
+                                             <!-- Add more user-specific details here -->
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="submit" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         @endforeach
                             <tr id="status_row">
                                     <td id="sn"></td>
@@ -111,3 +149,89 @@
     
   </div>
 </div>
+<script type="text/javascript">
+    $(document).ready( function () {
+      $("#example1").DataTable({
+          //  dom: '<"html5buttons">BlTfgitp',
+           
+           buttons: [
+          
+              { extend: 'copy',"charset": "utf-8", text: "{{__('copy')}}" },
+              { extend: 'excel',"charset": "utf-8", text: "{{__('excel')}}" },
+              { extend: 'csv',"charset": "utf-8", text: "{{__('csv')}}" },
+              @if(app()->getLocale() =='ar')
+              {extend: 'pdf',"charset": "utf-8", text: "{{__('pdf')}}",exportOptions: {columns: ':visible'},                    
+              customize: function (doc) {        
+              doc.defaultStyle.font = 'Arab';}},
+              @else
+              { extend: 'pdf',"charset": "utf-8", text: "{{__('pdf')}}" },
+              @endif
+              { extend: 'print',"charset": "utf-8", text: "{{__('print')}}" }
+          
+      ],
+    
+       "pagingType": "full_numbers",
+          "lengthMenu": [
+            [10, 25, 50, -1],
+            [10, 25, 50, "All"]
+          ],
+          responsive: true,
+          "order": [], //Initial no order.
+           "aaSorting": [],
+      });
+  
+      var table = $('.yajra-datatable').DataTable({
+          processing: true,
+          serverSide: true,
+          ajax: "{{ route('home.dashTableRecord') }}",
+          columns: [
+              {data: 'DT_RowIndex', name: 'DT_RowIndex'},
+              {data: 'subscriber', name: 'utype',render: function ( data, type, row, meta ) {
+              return (!data) ? "E" :"N";
+              }},
+              {render: function ( data, type, row, meta ) {
+              return "---";
+              }},
+              {data: 'subscriber', name: 'stype',render: function ( data, type, row, meta ) {
+                  var stype;
+                  if(!data){
+                      stype="NA" 
+                  }
+                  else if(data!='' && data.subscription.price >= 199){
+                      stype="P" 
+                  }
+                  else{
+                      stype="T"
+                  }
+              return stype;
+              }},
+              {data: 'subscriber', name: 'utype',render: function ( data, type, row, meta ) {
+              return (!data) ? "E" :"N";
+              }},
+              {data: 'subscriber', name: 'utype',render: function ( data, type, row, meta ) {
+              return (!data) ? "E" :"N";
+              }},
+              {data: 'subscriber', name: 'utype',render: function ( data, type, row, meta ) {
+              return (!data) ? "E" :"N";
+              }},
+              {
+                  data: 'action', 
+                  name: 'action', 
+                  orderable: true, 
+                  searchable: true
+              },
+          ]
+      });
+  
+      //show user
+      $('.user-modal-trigger').on('click', function() {
+          var userId = $(this).data('id');
+                  
+          // Show the modal
+          $('#userModal' + userId).modal('show');
+      });
+  
+  
+      
+    });
+  </script>

@@ -71,46 +71,66 @@ class book_publisherController extends AppBaseController
      *
      * @return Response
      */
-    public function show(Request $request,$id)
+    public function show(Request $request, $id)
     {
-        $input=$request->all();
+        $input = $request->all();
         $bookPublisher = $this->bookPublisherRepository->find($id);
-        
-        $publishers = \App\Models\book_publisher::where('user_id', $bookPublisher->user_id)->get();
-            foreach($publishers as $pub) {
-                $publisher[] = $pub->id;
-            }
-        $Publisherbooks=\App\Models\app_material::whereIn('publisher_id',$publisher)->get();
-	    $Publisherbookscount=\App\Models\app_material::whereIn('publisher_id',$publisher)->count();
-        $user_statistic_det=array();
-        $data_count=0;//164 books count
-        if($Publisherbookscount>0){
-		foreach($Publisherbooks as $book){    
-            if($request->has('from_date')&&$request->has('from_date')){
-                $data=\App\Models\app_book_analytic::where('book_id',$book->id)->whereDate('created_at','>', $input['from_date'])->whereDate('created_at','<', $input['to_date'])->with(['user','user.subscriber','user.subscriber.subscription','book'])->orderBy('id','desc')->get();
-                $data_c=\App\Models\app_book_analytic::where('book_id',$book->id)->whereDate('created_at','>', $input['from_date'])->whereDate('created_at','<', $input['to_date'])->with(['user','user.subscriber','user.subscriber.subscription','book'])->count();
-            }
-            else{
 
-                $data=\App\Models\app_book_analytic::where('book_id',$book->id)->with(['user','user.subscriber','user.subscriber.subscription','book'])->orderBy('id','desc')->get();
-                $data_c=\App\Models\app_book_analytic::where('book_id',$book->id)->with(['user','user.subscriber','user.subscriber.subscription','book'])->count();
-            }
-            if($data_c>0){
-                $data_count+=$data_c;
-                    $user_statistic_det[]=$data;
+        if (empty($bookPublisher)) {
+            Flash::error('Book Publisher not found');
+            return redirect(route('bookPublishers.index'));
+        }
+
+        $publisher = \App\Models\book_publisher::where('user_id', $bookPublisher->user_id)->first();
+
+        if (!$publisher) {
+            Flash::error('Publisher not found');
+            return redirect(route('bookPublishers.index'));
+        }
+
+        $Publisherbooks = \App\Models\app_material::where('publisher_id', $publisher->id)->get();
+        $Publisherbookscount = $Publisherbooks->count();
+
+        $user_statistic_det = [];
+        $data_count = 0; // 164 books count
+
+        if ($Publisherbookscount > 0) {
+            foreach ($Publisherbooks as $book) {
+                if ($request->has('from_date') && $request->has('to_date')) {
+                    $data = \App\Models\app_book_analytic::where('book_id', $book->id)
+                        ->whereDate('created_at', '>', $input['from_date'])
+                        ->whereDate('created_at', '<', $input['to_date'])
+                        ->with(['user', 'user.subscriber', 'user.subscriber.subscription', 'book'])
+                        ->orderBy('id', 'desc')
+                        ->get();
+
+                    $data_c = $data->count();
+                } else {
+                    $data = \App\Models\app_book_analytic::where('book_id', $book->id)
+                        ->with(['user', 'user.subscriber', 'user.subscriber.subscription', 'book'])
+                        ->orderBy('id', 'desc')
+                        ->get();
+
+                    $data_c = $data->count();
+                }
+
+                if ($data_c > 0) {
+                    $data_count += $data_c;
+                    $user_statistic_det[] = $data;
                 }
             }
         }
 
-        if (empty($bookPublisher)) {
-            Flash::error('Book Publisher not found');
+        // dd($user_statistic_det); // Uncomment for debugging
 
-            return redirect(route('bookPublishers.index'));
-        }
-
-        return view('book_publishers.show')->with(['input'=>$input,'bookPublisher'=> $bookPublisher,'user_statistic_det'=>$user_statistic_det,'data_count'=>$data_count]);
-        // return view('book_publishers.show')->with('bookPublisher', $bookPublisher);
+        return view('book_publishers.show')->with([
+            'input' => $input,
+            'bookPublisher' => $bookPublisher,
+            'user_statistic_det' => $user_statistic_det,
+            'data_count' => $data_count,
+        ]);
     }
+
 
     /**
      * Show the form for editing the specified book_publisher.
