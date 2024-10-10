@@ -57,21 +57,21 @@
                     // dd($books);
                     // dd($data);
                     $u_type=empty($data->subscriber)?'E':'N';
-                    
+
                     // $s_type=empty($data->subscriber->subscription)?'Not Subscribed':($data->subscriber->subscription->price==1)?'Free':'Paid';
                     $total_time_span=0;
                     foreach($data->analytics as $rec){
                         $total_time_span+=$rec->read_time;
                     }
                     $total=$total+$total_time_span;
-                    if(isset($input['from_date']) &&
-                    isset($input['to_date'])){
-                    $overall_read_time = App\Models\app_book_analytic::where('user_id',$data->id)->whereDate('created_at','>', $input['from_date'])->whereDate('created_at','<', $input['to_date'])->sum('read_time');
-
-                    }
-                    else{
-                    $overall_read_time = App\Models\app_book_analytic::where('user_id',$data->id)->sum('read_time');
-
+                    if (isset($input['from_date']) && isset($input['to_date'])) {
+                        $overall_read_time = App\Models\app_book_analytic::where('user_id', $data->id)
+                            ->whereDate('created_at', '>=', $input['from_date']) // Inclusive of from_date
+                            ->whereDate('created_at', '<=', $input['to_date'])   // Inclusive of to_date
+                            ->sum('read_time');
+                    } else {
+                        $overall_read_time = App\Models\app_book_analytic::where('user_id', $data->id)
+                            ->sum('read_time');
                     }
                     $totalOverall+=$overall_read_time;
                     $book_count=count($data->analytics);

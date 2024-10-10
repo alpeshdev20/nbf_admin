@@ -199,7 +199,8 @@ class HomeController extends Controller
                     'user_statistic_det' => $User_rec,
                     'data_count' => $User_rec_count,
                     'dataTable' => $dataTable,
-                    'books' => $books
+                    'books' => $books,
+                    'input'=> $input
                 ]);
             }
             
